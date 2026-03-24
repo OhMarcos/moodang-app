@@ -50,17 +50,6 @@ function crossValidate(reading: SajuReading, preComputed: PreComputedData): void
     warnings.push(`hexagramNumber: AI=${iching.hexagramNumber}, expected=${preComputed.iching.hexagramNumber}`);
   }
 
-  // Check lifePath number
-  const num = reading.numerology;
-  if (num?.lifePath && num.lifePath.number !== preComputed.numerology.lifePath) {
-    warnings.push(`lifePath: AI=${num.lifePath.number}, expected=${preComputed.numerology.lifePath}`);
-  }
-
-  // Check personalYear number
-  if (num?.personalYear && num.personalYear.number !== preComputed.numerology.personalYear) {
-    warnings.push(`personalYear: AI=${num.personalYear.number}, expected=${preComputed.numerology.personalYear}`);
-  }
-
   if (warnings.length > 0) {
     console.warn("[Saju Cross-Validation] AI deviated from pre-computed data:", warnings);
   }

@@ -2,30 +2,29 @@ import type { SajuInput } from "./types";
 import type { PreComputedData } from "./calculators/types";
 
 export function buildSajuSystemPrompt(): string {
-  return `당신은 OH-MOODANG "사중 렌즈(Quad Lens)" 해석가입니다.
-네 가지 전통적 분석 시스템의 **사전 계산된 데이터**를 바탕으로, 한 사람의 운명을 종합적으로 **해석**하는 AI 역술 해설가입니다.
+  return `당신은 OH-MOODANG "삼중 렌즈(Triple Lens)" 해석가입니다.
+세 가지 전통적 분석 시스템의 **사전 계산된 데이터**를 바탕으로, 한 사람의 운명을 종합적으로 **해석**하는 AI 역술 해설가입니다.
 
-⚠️ CRITICAL: 모든 계산(만세력, 십신, 오행, 용신, 대운, 세운, Nakshatra, Dasha, 매화역수, 수비학)은 이미 코드로 완료되어 제공됩니다.
+⚠️ CRITICAL: 모든 계산(만세력, 십신, 오행, 용신, 대운, 세운, Nakshatra, Dasha, 매화역수)은 이미 코드로 완료되어 제공됩니다.
 당신은 계산을 하지 않습니다. 제공된 데이터를 그대로 사용하여 해석과 스토리텔링만 수행합니다.
 제공된 사주 데이터(사주팔자, 십신, 용신 등)를 절대 변경하거나 재계산하지 마세요.
 
-## 사중 렌즈 (Quad Lens) 시스템
+## 삼중 렌즈 (Triple Lens) 시스템
 
 | Lens | 역할 | 시간축 |
 |------|------|--------|
 | **사주팔자** | 선천 운명 지도 (타고난 기질, 대운 흐름) | 평생 + 연/월 |
 | **Vedic Dasha** | 행성 에너지 주기 (Dasha 타이밍) | 수년~수십년 단위 |
 | **주역 (I Ching)** | 실시간 의사결정 오라클 (현재 상황의 지혜) | 현재 → 근미래 |
-| **수비학 (Numerology)** | 숫자 진동 분석 (생일의 수적 의미) | 평생 + 9년 주기 |
 
 ## 해석 원칙
 
-1. **데이터 충실도**: 제공된 사전 계산 데이터를 정확히 반영. dayMaster, elementBalance, hexagramNumber, lifePath 등은 반드시 제공된 값을 그대로 사용
+1. **데이터 충실도**: 제공된 사전 계산 데이터를 정확히 반영. dayMaster, elementBalance, hexagramNumber 등은 반드시 제공된 값을 그대로 사용
 2. **극적 스토리텔링**: 건조한 분석이 아닌, 읽는 사람이 몰입하고 공유하고 싶은 서사로 전달
 3. **구체적 예측**: "좋다/나쁘다" 수준이 아닌, 월과 상황을 특정한 구체적 예측
 4. **심리적 정확도**: 바넘 효과를 넘어, 사주 원국에 근거한 진짜 통찰 제공
 5. **공유 욕구 자극**: 읽고 나서 "이거 봐봐!" 하고 캡처해서 보내고 싶은 결과
-6. **사중 수렴**: 4개 시스템이 같은 결론을 가리키면 확신도 상승, 다르면 다각적 관점 제공
+6. **삼중 수렴**: 3개 시스템이 같은 결론을 가리키면 확신도 상승, 다르면 다각적 관점 제공
 
 ## 해석 단계
 
@@ -41,19 +40,15 @@ export function buildSajuSystemPrompt(): string {
 제공된 데이터: 본괘 번호/이름, 상괘/하괘, 변효 위치, 지괘
 → 괘의 의미, 변효 조언, 실천 지침을 해석 (질문/고민이 있으면 그에 맞게 해석 각도 조정)
 
-### 4단계: 수비학 해석
-제공된 데이터: Life Path Number, Personal Year Number/테마, Expression Number, Soul Urge Number
-→ 숫자의 의미와 9년 주기 위치 해석
-
-### 5단계: 사중 수렴 (Quad Convergence)
-4개 시스템의 결론을 교차 비교하여 통합 메시지를 도출:
+### 4단계: 삼중 수렴 (Triple Convergence)
+3개 시스템의 결론을 교차 비교하여 통합 메시지를 도출:
 1. **에너지 판정**: expansion(확장기) / stability(안정기) / transformation(변환기) / contraction(수축기)
-2. **일치도 점수**: 4개 시스템 중 몇 개가 같은 방향을 가리키는지 (1-4)
+2. **일치도 점수**: 3개 시스템 중 몇 개가 같은 방향을 가리키는지 (1-3)
 3. **핵심 메시지**: 통합 운명 메시지 (2-3문장)
 4. **원 액션**: "지금 딱 하나만 한다면" — 최우선 행동
 5. **교차 인사이트**: 단일 시스템에서는 발견할 수 없는 통찰
 
-### 6단계: 바이럴 요소 생성
+### 5단계: 바이럴 요소 생성
 
 **운명 유형 결정 (MBTI처럼 한글자)**
 제공된 십신 데이터에서 핵심 운명 코드를 추출합니다:
@@ -98,7 +93,7 @@ export function buildSajuSystemPrompt(): string {
 - **드라마틱하되 과장 금지**: 사주 근거 없는 표현 사용 금지
 - **구어체 한국어**: 교과서 같은 문어체 X, 친근하되 품격 있는 말투
 - **구체적 표현**: "좋습니다" → "4월에 예상치 못한 금전적 기회가 찾아올 가능성이 높습니다"
-- **Vedic/주역/수비학 용어**: 한국어 + 원어 병기 (예: "Mahadasha(대주기)")
+- **Vedic/주역 용어**: 한국어 + 원어 병기 (예: "Mahadasha(대주기)")
 
 ## 출력 형식
 
@@ -310,35 +305,19 @@ export function buildSajuSystemPrompt(): string {
     "actionVerdict": "지금은 X할 때 — 한 줄 행동 판결"
   },
 
-  "numerology": {
-    "lifePath": {
-      "number": 제공된 lifePath 값 그대로,
-      "title": "Life Path 유형 한 줄 이름 (예: 리더의 길)",
-      "description": "Life Path 의미 해석 (2-3문장)"
-    },
-    "personalYear": {
-      "number": 제공된 personalYear 값 그대로,
-      "theme": "제공된 personalYearTheme 참조하여 테마 설명",
-      "advice": "올해 수비학 기반 조언 (2문장)"
-    },
-    "expressionNumber": null 또는 { "number": 제공된 값 그대로, "meaning": "해석 (1-2문장)" },
-    "soulUrge": null 또는 { "number": 제공된 값 그대로, "meaning": "해석 (1-2문장)" },
-    "cycleInsight": "9년 주기에서의 현재 위치와 사주 대운의 교차 인사이트 (2문장)"
-  },
-
   "quadConvergence": {
     "energyVerdict": "expansion/stability/transformation/contraction",
     "energyVerdictKr": "확장기/안정기/변환기/수축기 중 택1",
-    "agreementLevel": 1-4,
-    "convergingSystems": ["사주팔자", "Vedic Dasha", "주역", "수비학" 중 일치하는 시스템들],
-    "coreMessage": "4개 시스템을 종합한 통합 운명 메시지 (2-3문장, 강력하고 구체적)",
-    "oneAction": "지금 딱 하나만 한다면 — 4렌즈 종합 최우선 행동 (1문장)",
+    "agreementLevel": 1-3,
+    "convergingSystems": ["사주팔자", "Vedic Dasha", "주역" 중 일치하는 시스템들],
+    "coreMessage": "3개 시스템을 종합한 통합 운명 메시지 (2-3문장, 강력하고 구체적)",
+    "oneAction": "지금 딱 하나만 한다면 — 3렌즈 종합 최우선 행동 (1문장)",
     "crossInsight": "단일 시스템에서는 발견할 수 없는, 교차점에서만 드러나는 통찰 (2문장)"
   }
 }
 
 ### 중요 규칙:
-- ⚠️ 제공된 사전 계산 데이터(사주 원국, 십신, 용신, 오행 균형, hexagramNumber, lifePath 등)는 절대 변경하지 마세요
+- ⚠️ 제공된 사전 계산 데이터(사주 원국, 십신, 용신, 오행 균형, hexagramNumber 등)는 절대 변경하지 마세요
 - elementBalance는 제공된 pre-computed 값을 그대로 출력하세요
 - destinyEvents는 3-5개, 올해 가장 중요한 이벤트만 선별
 - monthlyFortunes는 1-12월 모두 포함 (12개)
@@ -347,10 +326,9 @@ export function buildSajuSystemPrompt(): string {
 - shareKeywords는 3개 (인스타 바이오에 넣을 수 있는 짧은 키워드)
 - 유명인 매칭은 실존 인물만 사용, 20-30대 한국인이 아는 인물 우선
 - 모든 텍스트는 자연스러운 한국어 구어체로
-- vedicDasha, iChing, numerology, quadConvergence는 반드시 포함
-- expressionNumber와 soulUrge는 pre-computed에서 null이 아닌 경우에만 값을 넣고, null이면 null
+- vedicDasha, iChing, quadConvergence는 반드시 포함
 - 주역 해석은 질문/고민이 제공되면 그에 맞게 해석하고, 없으면 전반적 운세 관점으로 해석
-- quadConvergence의 agreementLevel은 실제 4개 시스템 결론의 일치도를 정직하게 반영`;
+- quadConvergence의 agreementLevel은 실제 3개 시스템 결론의 일치도를 정직하게 반영`;
 }
 
 function formatSajuData(saju: PreComputedData["saju"]): string {
@@ -551,36 +529,12 @@ function formatIChingData(iching: PreComputedData["iching"]): string {
   ].join("\n");
 }
 
-function formatNumerologyData(numerology: PreComputedData["numerology"]): string {
-  const lines = [
-    `## 수비학 (Numerology) 사전 계산 데이터`,
-    ``,
-    `- Life Path Number: ${numerology.lifePath}`,
-    `- Personal Year Number: ${numerology.personalYear}`,
-    `- Personal Year 테마: ${numerology.personalYearTheme}`,
-  ];
-
-  if (numerology.expressionNumber !== null) {
-    lines.push(`- Expression Number: ${numerology.expressionNumber}`);
-  } else {
-    lines.push(`- Expression Number: null (영문 이름 미제공)`);
-  }
-
-  if (numerology.soulUrge !== null) {
-    lines.push(`- Soul Urge Number: ${numerology.soulUrge}`);
-  } else {
-    lines.push(`- Soul Urge Number: null (영문 이름 미제공)`);
-  }
-
-  return lines.join("\n");
-}
-
 export function buildSajuUserPrompt(
   input: SajuInput,
   preComputed: PreComputedData,
 ): string {
   const lines = [
-    `다음 정보와 사전 계산된 데이터로 사중 렌즈(Quad Lens) 통합 **해석**을 수행해주세요.`,
+    `다음 정보와 사전 계산된 데이터로 삼중 렌즈(Triple Lens) 통합 **해석**을 수행해주세요.`,
     ``,
     `═══════════════════════════════════════════════`,
     `## 기본 정보`,
@@ -595,10 +549,6 @@ export function buildSajuUserPrompt(
 
   if (input.birthPlace) {
     lines.push(`태어난 곳: ${input.birthPlace}`);
-  }
-
-  if (input.englishName) {
-    lines.push(`영문 이름: ${input.englishName}`);
   }
 
   if (input.currentConcern) {
@@ -620,8 +570,6 @@ export function buildSajuUserPrompt(
     ``,
     formatIChingData(preComputed.iching),
     ``,
-    formatNumerologyData(preComputed.numerology),
-    ``,
     `═══════════════════════════════════════════════`,
     `## 요청`,
     `═══════════════════════════════════════════════`,
@@ -637,10 +585,9 @@ export function buildSajuUserPrompt(
     `- dayMaster: "${preComputed.saju.dayMaster.stemKr}${preComputed.saju.dayMaster.elementKr}" 그대로 사용`,
     `- elementBalance: wood=${preComputed.saju.elementBalance.wood}, fire=${preComputed.saju.elementBalance.fire}, earth=${preComputed.saju.elementBalance.earth}, metal=${preComputed.saju.elementBalance.metal}, water=${preComputed.saju.elementBalance.water} 그대로 사용`,
     `- hexagramNumber: ${preComputed.iching.hexagramNumber} 그대로 사용`,
-    `- lifePath.number: ${preComputed.numerology.lifePath} 그대로 사용`,
-    `- personalYear.number: ${preComputed.numerology.personalYear} 그대로 사용`,
     `- vedicDasha의 nakshatra, mahadasha, antardasha 값은 위 데이터 그대로 사용`,
     `- celebrityMatch 필드는 포함하지 마세요 (제거됨)`,
+    `- numerology 필드는 포함하지 마세요 (제거됨)`,
   );
 
   return lines.join("\n");

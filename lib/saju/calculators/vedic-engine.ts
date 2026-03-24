@@ -72,18 +72,80 @@ const PHASE_MAP: Record<string, PreComputedVedic["currentPhase"]> = {
 };
 
 /**
- * Simplified Moon longitude calculation.
- * Uses mean lunar period: Moon moves ~13.176° per day.
- * Reference: Moon at 0° Aries on Jan 1, 1900 (approximate epoch).
+ * Improved Moon longitude calculation using Meeus algorithm (simplified).
+ *
+ * Based on Jean Meeus "Astronomical Algorithms" Chapter 47.
+ * Uses the Moon's mean longitude with major correction terms
+ * (mean anomaly, mean elongation, argument of latitude).
+ *
+ * Accuracy: ±2° (sufficient for Nakshatra determination within ±1).
+ * For sub-degree precision, a full ephemeris (Swiss Ephemeris) is needed.
+ *
+ * Returns sidereal longitude (tropical - ayanamsa) for Vedic astrology.
  */
 function approximateMoonLongitude(year: number, month: number, day: number): number {
-  const refDate = new Date(1900, 0, 1);
-  const birthDate = new Date(year, month - 1, day);
-  const daysDiff = (birthDate.getTime() - refDate.getTime()) / (1000 * 60 * 60 * 24);
+  // Julian Day Number calculation
+  const a = Math.floor((14 - month) / 12);
+  const y = year + 4800 - a;
+  const m = month + 12 * a - 3;
+  const jd = day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4)
+    - Math.floor(y / 100) + Math.floor(y / 400) - 32045 + 0.5; // noon
 
-  // Mean daily motion of Moon = 13.176358°
-  const moonLong = (daysDiff * 13.176358) % 360;
-  return moonLong < 0 ? moonLong + 360 : moonLong;
+  // Julian centuries from J2000.0
+  const T = (jd - 2451545.0) / 36525.0;
+
+  // Moon's mean longitude (L')
+  const Lp = 218.3164477 + 481267.88123421 * T
+    - 0.0015786 * T * T + T * T * T / 538841.0;
+
+  // Moon's mean anomaly (M')
+  const Mp = 134.9633964 + 477198.8675055 * T
+    + 0.0087414 * T * T + T * T * T / 69699.0;
+
+  // Moon's mean elongation (D)
+  const D = 297.8501921 + 445267.1114034 * T
+    - 0.0018819 * T * T + T * T * T / 545868.0;
+
+  // Sun's mean anomaly (M)
+  const M = 357.5291092 + 35999.0502909 * T
+    - 0.0001536 * T * T;
+
+  // Moon's argument of latitude (F)
+  const F = 93.2720950 + 483202.0175233 * T
+    - 0.0036539 * T * T;
+
+  // Convert to radians
+  const rad = Math.PI / 180;
+  const MpR = Mp * rad;
+  const DR = D * rad;
+  const MR = M * rad;
+  const FR = F * rad;
+
+  // Major correction terms for longitude (simplified from Meeus Table 47.A)
+  const dL = 6288774 * Math.sin(MpR)
+    + 1274027 * Math.sin(2 * DR - MpR)
+    + 658314 * Math.sin(2 * DR)
+    + 213618 * Math.sin(2 * MpR)
+    - 185116 * Math.sin(MR)
+    - 114332 * Math.sin(2 * FR)
+    + 58793 * Math.sin(2 * DR - 2 * MpR)
+    + 57066 * Math.sin(2 * DR - MR - MpR)
+    + 53322 * Math.sin(2 * DR + MpR)
+    + 45758 * Math.sin(2 * DR - MR);
+
+  // Tropical longitude
+  let tropicalLong = Lp + dL / 1000000.0;
+  tropicalLong = tropicalLong % 360;
+  if (tropicalLong < 0) tropicalLong += 360;
+
+  // Lahiri Ayanamsa (precession correction for Vedic/sidereal)
+  // Lahiri ayanamsa at J2000.0 ≈ 23.85° with precession rate ≈ 50.27"/year
+  const ayanamsa = 23.85 + (50.27 / 3600) * (year - 2000);
+
+  let siderealLong = tropicalLong - ayanamsa;
+  if (siderealLong < 0) siderealLong += 360;
+
+  return siderealLong;
 }
 
 function getNakshatraFromLongitude(longitude: number) {

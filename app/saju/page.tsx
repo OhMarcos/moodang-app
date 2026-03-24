@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { track } from "@/lib/analytics";
+import SajuAnalysisProgress from "@/components/saju/AnalysisProgress";
 import type {
   SajuInput,
   SajuReading,
@@ -241,7 +242,6 @@ export default function SajuPage() {
     gender: "" as "" | "male" | "female",
     calendarType: "solar" as "solar" | "lunar",
     birthPlace: "",
-    englishName: "",
     currentConcern: "",
   });
   const [showOptional, setShowOptional] = useState(false);
@@ -270,7 +270,6 @@ export default function SajuPage() {
       gender: form.gender as "male" | "female",
       calendarType: form.calendarType,
       ...(form.birthPlace.trim() && { birthPlace: form.birthPlace.trim() }),
-      ...(form.englishName.trim() && { englishName: form.englishName.trim() }),
       ...(form.currentConcern.trim() && { currentConcern: form.currentConcern.trim() }),
     };
 
@@ -493,19 +492,6 @@ export default function SajuPage() {
                     />
                   </div>
 
-                  {/* English Name */}
-                  <div>
-                    <label className="text-sm text-[var(--color-text-secondary)] mb-1 block">
-                      영문 이름 <span className="text-xs text-[var(--color-text-muted)]">(수비학 분석용)</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={form.englishName}
-                      onChange={(e) => setForm({ ...form, englishName: e.target.value })}
-                      placeholder="예: HONG GILDONG"
-                      className="w-full px-4 py-3 rounded-xl bg-[var(--color-bg-base)] border border-[var(--color-border)] text-[var(--color-text-primary)] text-sm focus:outline-none focus:border-[var(--color-mystic-purple)]/50 transition"
-                    />
-                  </div>
 
                   {/* Current Concern */}
                   <div>
@@ -540,23 +526,7 @@ export default function SajuPage() {
 
         {/* ── ANALYZING ── */}
         {state.status === "analyzing" && (
-          <div className="text-center py-20 space-y-6 animate-fade-in-up">
-            <div className="relative w-28 h-28 mx-auto">
-              <div className="absolute inset-0 rounded-full border-2 border-[var(--color-mystic-purple)]/20" />
-              <div className="absolute inset-0 rounded-full border-2 border-t-[var(--color-mystic-purple)] animate-spin-slow" />
-              <div className="absolute inset-4 rounded-full bg-[var(--color-mystic-purple)]/5 flex items-center justify-center">
-                <span className="text-3xl animate-float">☯</span>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <p className="text-[var(--color-text-primary)] font-semibold">
-                {state.input?.name}님의 운명교차점을 찾고 있습니다
-              </p>
-              <p className="text-xs text-[var(--color-text-muted)]">
-                4대 운명 시스템 교차분석 중...
-              </p>
-            </div>
-          </div>
+          <SajuAnalysisProgress name={state.input?.name ?? ""} />
         )}
 
         {/* ── ERROR ── */}
@@ -1089,7 +1059,7 @@ export default function SajuPage() {
             )}
 
             {/* ═══ CH5: 심화 시스템 분석 ═══ */}
-            <ChapterHeader icon="🔬" title="심화 시스템 분석" subtitle="사주 · Vedic · 주역 · 수비학 개별 분석" />
+            <ChapterHeader icon="🔬" title="심화 시스템 분석" subtitle="사주 · Vedic · 주역 개별 분석" />
 
             {/* Vedic Dasha */}
             {r.vedicDasha && (
@@ -1188,77 +1158,6 @@ export default function SajuPage() {
                     {r.iChing.actionVerdict}
                   </p>
                 </div>
-              </section>
-            )}
-
-            {/* Numerology */}
-            {r.numerology && (
-              <section className="p-5 rounded-2xl bg-[var(--color-bg-card)] border border-[var(--color-border)]">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-lg">🔢</span>
-                  <h3 className="font-semibold text-sm text-[var(--color-sacred-gold)]">
-                    수비학 — 숫자의 진동
-                  </h3>
-                </div>
-                <div className="grid grid-cols-2 gap-2 mb-3">
-                  <div className="p-3 rounded-lg bg-[var(--color-bg-base)] text-center">
-                    <p className="text-3xl font-bold text-purple-gradient font-mono">
-                      {r.numerology.lifePath.number}
-                    </p>
-                    <p className="text-xs text-[var(--color-text-muted)] mt-1">Life Path Number</p>
-                    <p className="text-xs font-semibold text-[var(--color-text-primary)] mt-0.5">
-                      {r.numerology.lifePath.title}
-                    </p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-[var(--color-bg-base)] text-center">
-                    <p className="text-3xl font-bold text-[var(--color-sacred-gold)] font-mono">
-                      {r.numerology.personalYear.number}
-                    </p>
-                    <p className="text-xs text-[var(--color-text-muted)] mt-1">2026 Personal Year</p>
-                    <p className="text-xs font-semibold text-[var(--color-text-primary)] mt-0.5">
-                      {r.numerology.personalYear.theme}
-                    </p>
-                  </div>
-                </div>
-                <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed mb-2">
-                  {r.numerology.lifePath.description}
-                </p>
-                <div className="text-xs text-[var(--color-teal)] bg-[var(--color-teal)]/5 px-3 py-2 rounded-lg mb-3">
-                  {r.numerology.personalYear.advice}
-                </div>
-                {(r.numerology.expressionNumber || r.numerology.soulUrge) && (
-                  <div className="grid grid-cols-2 gap-2 mb-3">
-                    {r.numerology.expressionNumber && (
-                      <div className="p-3 rounded-lg bg-[var(--color-bg-base)]">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-sm font-bold text-[var(--color-mystic-purple-light)] font-mono">
-                            {r.numerology.expressionNumber.number}
-                          </span>
-                          <span className="text-xs text-[var(--color-text-muted)]">Expression</span>
-                        </div>
-                        <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
-                          {r.numerology.expressionNumber.meaning}
-                        </p>
-                      </div>
-                    )}
-                    {r.numerology.soulUrge && (
-                      <div className="p-3 rounded-lg bg-[var(--color-bg-base)]">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-sm font-bold text-[var(--color-mystic-purple-light)] font-mono">
-                            {r.numerology.soulUrge.number}
-                          </span>
-                          <span className="text-xs text-[var(--color-text-muted)]">Soul Urge</span>
-                        </div>
-                        <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
-                          {r.numerology.soulUrge.meaning}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                )}
-                <p className="text-xs text-[var(--color-text-secondary)] italic leading-relaxed">
-                  {r.numerology.cycleInsight}
-                </p>
               </section>
             )}
 

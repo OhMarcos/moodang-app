@@ -9,8 +9,6 @@ export interface SajuInput {
   calendarType: "solar" | "lunar";
   /** Optional birthplace for solar time correction & Vedic ascendant */
   birthPlace?: string;
-  /** Optional English name for Numerology name analysis */
-  englishName?: string;
   /** Optional current concern for I Ching reading */
   currentConcern?: string;
 }
@@ -185,21 +183,6 @@ export interface IChingReading {
   actionVerdict: string;
 }
 
-// --- Quad Lens: Numerology ---
-
-export interface NumerologyReading {
-  /** Life Path Number (1-9, 11, 22, 33) */
-  lifePath: { number: number; title: string; description: string };
-  /** Personal Year for current year */
-  personalYear: { number: number; theme: string; advice: string };
-  /** Expression Number (from name, if provided) */
-  expressionNumber?: { number: number; meaning: string };
-  /** Soul Urge Number (from name, if provided) */
-  soulUrge?: { number: number; meaning: string };
-  /** 9-year cycle position insight */
-  cycleInsight: string;
-}
-
 // --- Quad Lens: Convergence ---
 
 export interface QuadConvergence {
@@ -207,7 +190,7 @@ export interface QuadConvergence {
   energyVerdict: string;
   /** Korean label for verdict */
   energyVerdictKr: string;
-  /** 4-system agreement level (1-4, how many systems agree) */
+  /** 3-system agreement level (1-3, how many systems agree) */
   agreementLevel: number;
   /** Systems that converge on same conclusion */
   convergingSystems: string[];
@@ -314,10 +297,9 @@ export interface SajuReading {
   // Share Keywords (인스타 바이오용)
   shareKeywords: string[];
 
-  // ─── Quad Lens (4-System Analysis) ───
+  // ─── Triple Lens (3-System Analysis) ───
   vedicDasha?: VedicDasha;
   iChing?: IChingReading;
-  numerology?: NumerologyReading;
   quadConvergence?: QuadConvergence;
 }
 

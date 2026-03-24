@@ -167,19 +167,10 @@ export interface PreComputedIChing {
   };
 }
 
-export interface PreComputedNumerology {
-  lifePath: number;
-  personalYear: number;
-  personalYearTheme: string;
-  expressionNumber: number | null;
-  soulUrge: number | null;
-}
-
 export interface PreComputedData {
   saju: PreComputedSaju;
   vedic: PreComputedVedic;
   iching: PreComputedIChing;
-  numerology: PreComputedNumerology;
   metadata: {
     calculatedAt: string;
     trueSolarTimeUsed: boolean;

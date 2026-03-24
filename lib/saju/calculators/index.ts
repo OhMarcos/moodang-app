@@ -1,17 +1,16 @@
 import type { SajuInput } from "../types";
-import type { PreComputedData, PreComputedVedic, PreComputedIChing, PreComputedNumerology } from "./types";
+import type { PreComputedData, PreComputedVedic, PreComputedIChing } from "./types";
 import { calculateSaju, lookupLongitude } from "./saju-engine";
 import { calculateVedic } from "./vedic-engine";
 import { calculateIChing } from "./iching-engine";
-import { calculateNumerology } from "./numerology-engine";
 
 /**
- * Run all 4 calculation systems deterministically.
+ * Run all 3 calculation systems deterministically.
  * Returns pre-computed data ready for AI interpretation.
  *
  * Error isolation: Each engine runs independently.
  * - Saju engine failure is CRITICAL (throws to caller).
- * - Vedic/IChing/Numerology failures use sensible defaults.
+ * - Vedic/IChing failures use sensible defaults.
  */
 export async function calculateAllSystems(input: SajuInput): Promise<PreComputedData> {
   const longitudeDeg = lookupLongitude(input.birthPlace);
@@ -36,19 +35,10 @@ export async function calculateAllSystems(input: SajuInput): Promise<PreComputed
     iching = getIChingFallback();
   }
 
-  let numerology: PreComputedNumerology;
-  try {
-    numerology = calculateNumerology(input);
-  } catch (e) {
-    console.error("[calculateAllSystems] Numerology engine failed, using fallback:", e);
-    numerology = getNumerologyFallback();
-  }
-
   return {
     saju,
     vedic,
     iching,
-    numerology,
     metadata: {
       calculatedAt: new Date().toISOString(),
       trueSolarTimeUsed: !!input.birthPlace,
@@ -91,18 +81,7 @@ function getIChingFallback(): PreComputedIChing {
   };
 }
 
-function getNumerologyFallback(): PreComputedNumerology {
-  return {
-    lifePath: 1,
-    personalYear: 1,
-    personalYearTheme: "새로운 시작의 해",
-    expressionNumber: null,
-    soulUrge: null,
-  };
-}
-
 export { calculateSaju } from "./saju-engine";
 export { calculateVedic } from "./vedic-engine";
 export { calculateIChing } from "./iching-engine";
-export { calculateNumerology } from "./numerology-engine";
 export type { PreComputedData } from "./types";
