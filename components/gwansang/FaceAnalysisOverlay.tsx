@@ -28,8 +28,9 @@ const C = {
   dark: "#0f172a",
 };
 
-const SIZE = 1080;
-const PAD = 48;
+const WIDTH = 1080;
+const HEIGHT = 1350; // 4:5 ratio — optimal for Instagram feed
+const PAD = 28;
 
 const SCORE_LABELS: { key: string; label: string; emoji: string }[] = [
   { key: "sexAppeal", label: "색기", emoji: "🔥" },
@@ -269,39 +270,37 @@ function findTopScore(scores: Record<string, number>): { key: string; value: num
 }
 
 /**
- * Instagram share card — 1080×1080
- * Duotone mystical filter + neon face annotations + glow score bars + CTA
+ * Instagram share card — 1080×1350 (4:5)
+ * 1:1 photo + compact score bars + CTA
  */
 function drawCard(
   ctx: CanvasRenderingContext2D,
   img: HTMLImageElement,
   reading: GwansangReading,
 ) {
-  const s = SIZE;
-
   // ─── Background (deep space gradient) ───
-  const bgGrad = ctx.createRadialGradient(s / 2, s * 0.35, 0, s / 2, s * 0.35, s * 0.85);
+  const bgGrad = ctx.createRadialGradient(WIDTH / 2, HEIGHT * 0.3, 0, WIDTH / 2, HEIGHT * 0.3, HEIGHT * 0.8);
   bgGrad.addColorStop(0, "#1a0a2e");
   bgGrad.addColorStop(0.5, "#0e0a1e");
   bgGrad.addColorStop(1, C.bg);
   ctx.fillStyle = bgGrad;
-  ctx.fillRect(0, 0, s, s);
+  ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
   // ─── Corner marks ───
   const cm = 40;
-  const fi = 20;
+  const fi = 18;
   ctx.strokeStyle = `${C.gold}50`;
   ctx.lineWidth = 2.5;
   ctx.beginPath(); ctx.moveTo(fi, fi + cm); ctx.lineTo(fi, fi); ctx.lineTo(fi + cm, fi); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(s - fi - cm, fi); ctx.lineTo(s - fi, fi); ctx.lineTo(s - fi, fi + cm); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(fi, s - fi - cm); ctx.lineTo(fi, s - fi); ctx.lineTo(fi + cm, s - fi); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(s - fi - cm, s - fi); ctx.lineTo(s - fi, s - fi); ctx.lineTo(s - fi, s - fi - cm); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(WIDTH - fi - cm, fi); ctx.lineTo(WIDTH - fi, fi); ctx.lineTo(WIDTH - fi, fi + cm); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(fi, HEIGHT - fi - cm); ctx.lineTo(fi, HEIGHT - fi); ctx.lineTo(fi + cm, HEIGHT - fi); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(WIDTH - fi - cm, HEIGHT - fi); ctx.lineTo(WIDTH - fi, HEIGHT - fi); ctx.lineTo(WIDTH - fi, HEIGHT - fi - cm); ctx.stroke();
 
-  // ─── Photo region (top ~50%) ───
+  // ─── Photo region (1:1 square) ───
   const photoX = PAD;
   const photoY = PAD;
-  const photoW = s - PAD * 2;
-  const photoH = s * 0.50;
+  const photoW = WIDTH - PAD * 2;
+  const photoH = photoW; // 1:1
 
   ctx.save();
   roundRect(ctx, photoX, photoY, photoW, photoH, 20);
@@ -313,16 +312,16 @@ function drawCard(
   const sy = (img.height - imgSize) / 2;
   ctx.drawImage(img, sx, sy, imgSize, imgSize, photoX, photoY, photoW, photoH);
 
-  // Duotone mystic filter (purple shadows → gold highlights + grain)
+  // Duotone mystic filter
   applyMysticFilter(ctx, photoX, photoY, photoW, photoH);
 
-  // Face annotations (12궁/삼정/오관) with neon glow
+  // Face annotations (12궁/삼정/오관)
   drawFaceAnnotations(ctx, photoX, photoY, photoW, photoH);
 
   // Bottom gradient fade
-  const fadeGrad = ctx.createLinearGradient(0, photoY + photoH * 0.6, 0, photoY + photoH);
+  const fadeGrad = ctx.createLinearGradient(0, photoY + photoH * 0.65, 0, photoY + photoH);
   fadeGrad.addColorStop(0, "rgba(10, 14, 26, 0)");
-  fadeGrad.addColorStop(1, "rgba(10, 14, 26, 0.9)");
+  fadeGrad.addColorStop(1, "rgba(10, 14, 26, 0.95)");
   ctx.fillStyle = fadeGrad;
   ctx.fillRect(photoX, photoY, photoW, photoH);
 
@@ -356,7 +355,7 @@ function drawCard(
   ctx.shadowColor = C.gold;
   ctx.shadowBlur = 30;
   ctx.fillStyle = C.goldLight;
-  ctx.fillText(nickText, s / 2, photoY + photoH - 24);
+  ctx.fillText(nickText, WIDTH / 2, photoY + photoH - 24);
   ctx.restore();
 
   // ─── Score section ───
@@ -367,11 +366,11 @@ function drawCard(
   const scoresMap = scores as unknown as Record<string, number>;
   const topScore = findTopScore(scoresMap);
 
-  const scoreStartY = photoY + photoH + 28;
-  const barX = PAD + 20;
-  const barTotalW = s - (PAD + 20) * 2;
-  const barH = 28;
-  const rowGap = 50;
+  const scoreStartY = photoY + photoH + 24;
+  const barX = PAD + 12;
+  const barTotalW = WIDTH - (PAD + 12) * 2;
+  const barH = 18;
+  const rowGap = 42;
 
   for (let i = 0; i < SCORE_LABELS.length; i++) {
     const { key, label, emoji } = SCORE_LABELS[i];
@@ -380,30 +379,30 @@ function drawCard(
     const isTop = key === topScore.key;
 
     // Label
-    ctx.font = `bold ${isTop ? 24 : 21}px "Noto Serif KR", serif`;
+    ctx.font = `bold ${isTop ? 22 : 19}px "Noto Serif KR", serif`;
     ctx.textAlign = "left";
     ctx.fillStyle = isTop ? C.goldLight : C.muted;
-    ctx.fillText(`${emoji} ${label}`, barX, y + 5);
+    ctx.fillText(`${emoji} ${label}`, barX, y + 4);
 
     // Score number
-    ctx.font = `bold ${isTop ? 30 : 25}px "SF Mono", "Menlo", monospace`;
+    ctx.font = `bold ${isTop ? 28 : 23}px "SF Mono", "Menlo", monospace`;
     ctx.textAlign = "right";
     ctx.fillStyle = isTop ? C.goldLight : value >= 70 ? C.gold : value >= 40 ? C.muted : C.red;
     if (isTop) {
       ctx.save();
       ctx.shadowColor = C.gold;
       ctx.shadowBlur = 12;
-      ctx.fillText(`${value}`, barX + barTotalW, y + 5);
+      ctx.fillText(`${value}`, barX + barTotalW, y + 4);
       ctx.restore();
     } else {
-      ctx.fillText(`${value}`, barX + barTotalW, y + 5);
+      ctx.fillText(`${value}`, barX + barTotalW, y + 4);
     }
 
     // Bar track
-    const trackX = barX + 120;
-    const trackEndX = barX + barTotalW - 70;
+    const trackX = barX + 110;
+    const trackEndX = barX + barTotalW - 60;
     const trackW = trackEndX - trackX;
-    const by = y - 8;
+    const by = y - 6;
 
     roundRect(ctx, trackX, by, trackW, barH, barH / 2);
     ctx.fillStyle = C.barBg;
@@ -431,7 +430,7 @@ function drawCard(
     if (isTop) {
       ctx.save();
       ctx.shadowColor = C.neon;
-      ctx.shadowBlur = 18;
+      ctx.shadowBlur = 14;
       ctx.fillStyle = barGrad;
       ctx.fill();
       ctx.restore();
@@ -441,36 +440,25 @@ function drawCard(
     }
   }
 
-  // ─── Past life one-liner ───
-  const pastLife = reading.funTags?.pastLifeJob;
-  if (pastLife) {
-    const plY = scoreStartY + SCORE_LABELS.length * rowGap + 12;
-    ctx.font = `italic 20px "Noto Serif KR", serif`;
-    ctx.textAlign = "center";
-    ctx.fillStyle = `${C.goldDim}bb`;
-    const plText = `전생: ${pastLife.length > 28 ? pastLife.slice(0, 28) + "…" : pastLife}`;
-    ctx.fillText(plText, s / 2, plY);
-  }
-
   // ─── CTA ───
-  const ctaY = s - PAD - 28;
+  const ctaY = HEIGHT - PAD - 18;
 
-  // Separator line with neon glow
+  // Separator line
   ctx.save();
   ctx.shadowColor = C.neon;
   ctx.shadowBlur = 6;
   ctx.strokeStyle = `${C.neon}30`;
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(PAD + 100, ctaY - 22);
-  ctx.lineTo(s - PAD - 100, ctaY - 22);
+  ctx.moveTo(PAD + 100, ctaY - 24);
+  ctx.lineTo(WIDTH - PAD - 100, ctaY - 24);
   ctx.stroke();
   ctx.restore();
 
   ctx.font = `bold 22px sans-serif`;
   ctx.textAlign = "center";
   ctx.fillStyle = `${C.gold}cc`;
-  ctx.fillText("내 관상 능력치는?  👀  moodang.app", s / 2, ctaY);
+  ctx.fillText("내 관상 능력치는?  👀  moodang.app", WIDTH / 2, ctaY);
 }
 
 const FaceAnalysisOverlay = forwardRef<CardHandle, FaceAnalysisOverlayProps>(
@@ -492,8 +480,8 @@ const FaceAnalysisOverlay = forwardRef<CardHandle, FaceAnalysisOverlayProps>(
       img.crossOrigin = "anonymous";
 
       img.onload = () => {
-        canvas.width = SIZE;
-        canvas.height = SIZE;
+        canvas.width = WIDTH;
+        canvas.height = HEIGHT;
         drawCard(ctx, img, reading);
         setIsReady(true);
       };
