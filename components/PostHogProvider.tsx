@@ -1,0 +1,27 @@
+"use client";
+
+import { useEffect } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import posthog from "@/lib/posthog";
+import { initPostHog, POSTHOG_KEY } from "@/lib/posthog";
+
+export default function PostHogProvider({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // Initialize PostHog on mount
+  useEffect(() => {
+    initPostHog();
+  }, []);
+
+  // Track pageviews on route change
+  useEffect(() => {
+    if (!POSTHOG_KEY) return;
+    if (!posthog.__loaded) return;
+
+    const url = pathname + (searchParams.toString() ? `?${searchParams.toString()}` : "");
+    posthog.capture("$pageview", { $current_url: url });
+  }, [pathname, searchParams]);
+
+  return <>{children}</>;
+}

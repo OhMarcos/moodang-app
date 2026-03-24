@@ -1,0 +1,135 @@
+@import "tailwindcss";
+
+@theme {
+  /* === MOODANG Brand Colors === */
+
+  /* Backgrounds */
+  --color-bg-base: #0a1628;
+  --color-bg-card: #1e293b;
+  --color-bg-elevated: #334155;
+
+  /* Accent */
+  --color-sacred-gold: #d4a574;
+  --color-sacred-gold-light: #e8c9a0;
+  --color-sacred-gold-dim: #a07c52;
+  --color-mystic-purple: #7c3aed;
+  --color-mystic-purple-light: #a78bfa;
+  --color-crimson: #dc2626;
+  --color-teal: #0891b2;
+
+  /* Text */
+  --color-text-primary: #e2e8f0;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #64748b;
+
+  /* Border */
+  --color-border: #334155;
+  --color-border-accent: rgba(212, 165, 116, 0.2);
+
+  /* Legacy aliases (gwansang components backward compat) */
+  --color-bg: #0a1628;
+  --color-gold: #d4a574;
+  --color-gold-light: #e8c9a0;
+  --color-gold-dim: #a07c52;
+  --color-red: #dc2626;
+  --color-red-light: #ef4444;
+  --color-ivory: #e2e8f0;
+  --color-ivory-dim: #94a3b8;
+  --color-text: #e2e8f0;
+  --color-border-gold: rgba(212, 165, 116, 0.2);
+
+  /* Typography */
+  --font-serif: "Noto Serif KR", serif;
+  --font-sans: "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-bg-base);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+}
+
+/* Gold gradient text */
+.text-gold-gradient {
+  background: linear-gradient(135deg, var(--color-sacred-gold-light), var(--color-sacred-gold), var(--color-sacred-gold-dim));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Purple gradient text */
+.text-purple-gradient {
+  background: linear-gradient(135deg, var(--color-mystic-purple-light), var(--color-mystic-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glow-gold { box-shadow: 0 0 24px rgba(212, 165, 116, 0.15); }
+.glow-purple { box-shadow: 0 0 32px rgba(124, 58, 237, 0.15); }
+
+.border-traditional {
+  border: 1px solid var(--color-border);
+  position: relative;
+}
+.border-traditional::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border: 1px solid var(--color-border-accent);
+  pointer-events: none;
+}
+
+@keyframes pulse-gold {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+.animate-pulse-gold { animation: pulse-gold 2s ease-in-out infinite; }
+
+@keyframes fill-bar {
+  from { width: 0%; }
+  to { width: var(--fill-width); }
+}
+.animate-fill { animation: fill-bar 1.2s ease-out forwards; }
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up { animation: fade-in-up 0.6s ease-out forwards; }
+
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+
+.face-guide {
+  border: 2px dashed var(--color-sacred-gold);
+  border-radius: 50%;
+  opacity: 0.5;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+.animate-float { animation: float 3s ease-in-out infinite; }
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-spin-slow { animation: spin-slow 3s linear infinite; }
+
+.ink-overlay { position: relative; }
+.ink-overlay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 30% 20%, rgba(212, 165, 116, 0.03) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 80%, rgba(124, 58, 237, 0.03) 0%, transparent 50%);
+  pointer-events: none;
+}
