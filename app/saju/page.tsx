@@ -258,7 +258,7 @@ export default function SajuPage() {
     (form.gender === "male" || form.gender === "female");
 
   const handleAnalyze = async () => {
-    if (!isFormValid) return;
+    if (!isFormValid || state.status === "analyzing") return;
 
     const input: SajuInput = {
       name: form.name,
@@ -277,6 +277,9 @@ export default function SajuPage() {
     track.sajuAnalysisStarted();
     setState({ status: "analyzing", input, reading: null, error: null });
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 120_000); // 2 min timeout
+
     try {
       const response = await fetch("/api/saju/analyze", {
         method: "POST",
@@ -285,7 +288,10 @@ export default function SajuPage() {
           "x-session-id": getSessionId(),
         },
         body: JSON.stringify(input),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         let errorMsg = "분석에 실패했습니다.";
@@ -311,7 +317,13 @@ export default function SajuPage() {
       setSajuChart(data.sajuChart ?? null);
       setState({ status: "complete", input, reading: data.reading, error: null });
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.";
+      clearTimeout(timeoutId);
+      let errorMsg = "알 수 없는 오류가 발생했습니다.";
+      if (err instanceof DOMException && err.name === "AbortError") {
+        errorMsg = "분석 시간이 초과되었습니다. 다시 시도해주세요.";
+      } else if (err instanceof Error) {
+        errorMsg = err.message;
+      }
       track.sajuAnalysisFailed(errorMsg);
       setState({
         status: "error",

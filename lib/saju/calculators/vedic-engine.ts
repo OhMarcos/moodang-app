@@ -257,6 +257,11 @@ export function calculateVedic(input: SajuInput): PreComputedVedic {
   const solar = resolveSolarDate(input);
   const currentYear = new Date().getFullYear();
 
+  // Guard: Meeus algorithm accuracy degrades outside ~1900-2100
+  if (solar.year < 1900 || solar.year > 2100) {
+    throw new Error(`Vedic calculation not supported for year ${solar.year}`);
+  }
+
   const moonLong = approximateMoonLongitude(solar.year, solar.month, solar.day);
   const { index, nakshatra, pada, degrees } = getNakshatraFromLongitude(moonLong);
 

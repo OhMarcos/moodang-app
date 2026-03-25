@@ -161,10 +161,12 @@ function getTransformedHexagram(upperIdx: number, lowerIdx: number, changingLine
  */
 export function calculateIChing(input: SajuInput): PreComputedIChing {
   const solar = resolveSolarDate(input);
-  const { birthHour } = input;
+
+  // Treat unknown hour (-1) or out-of-range as noon (12) — 오시(午時) neutral default
+  const safeHour = input.birthHour < 0 || input.birthHour > 23 ? 12 : input.birthHour;
 
   // 시수: convert 24-hour to 12 지지 time block (1-12)
-  const hourBlock = Math.floor(((birthHour + 1) % 24) / 2) + 1;
+  const hourBlock = Math.floor(((safeHour + 1) % 24) / 2) + 1;
 
   const sum1 = solar.year + solar.month + solar.day;
   const sum2 = sum1 + hourBlock;

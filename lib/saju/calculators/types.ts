@@ -175,5 +175,9 @@ export interface PreComputedData {
     calculatedAt: string;
     trueSolarTimeUsed: boolean;
     longitudeDeg: number;
+    /** Engines that fell back to defaults (e.g., ["vedic", "iching"]) */
+    fallbacksUsed: string[];
+    /** True if birth hour was unknown (-1) and defaulted to noon */
+    birthHourUnknown: boolean;
   };
 }

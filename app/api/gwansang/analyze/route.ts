@@ -1,20 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
+import { validateEnv } from "@/lib/env";
 import { ai, GEMINI_MODEL } from "@/lib/gwansang/gemini";
 import {
   GWANSANG_SYSTEM_PROMPT,
   GWANSANG_USER_PROMPT,
 } from "@/lib/gwansang/gwansang-prompt";
 import { validateGwansangReading } from "@/lib/gwansang/validate";
-import { checkIpRateLimit, checkDailyCap } from "@/lib/rate-limit";
-import { saveReading, hashIp } from "@/lib/database";
+import { checkIpRateLimitAsync, checkDailyCap, hashIpSecure } from "@/lib/rate-limit";
+import { saveReading } from "@/lib/database";
 
 const RATE_LIMIT = 10; // per IP per window
 const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 
 export async function POST(request: NextRequest) {
   try {
+    const env = validateEnv();
+    if (!env.ok) {
+      return NextResponse.json(
+        { error: "서버 설정 오류입니다. 관리자에게 문의해주세요." },
+        { status: 503 },
+      );
+    }
+
     const ip =
       request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+
+    // Per-IP rate limit FIRST (don't consume daily cap for rate-limited users)
+    if (!(await checkIpRateLimitAsync(ip, RATE_LIMIT, RATE_WINDOW_MS))) {
+      return NextResponse.json(
+        { error: "너무 많은 요청입니다. 잠시 후 다시 시도해주세요." },
+        { status: 429 },
+      );
+    }
 
     // Global daily cap
     const { allowed: dailyAllowed } = checkDailyCap();
@@ -25,16 +42,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Per-IP rate limit
-    if (!checkIpRateLimit(ip, RATE_LIMIT, RATE_WINDOW_MS)) {
+    let body: Record<string, unknown>;
+    try {
+      body = await request.json();
+    } catch {
       return NextResponse.json(
-        { error: "너무 많은 요청입니다. 잠시 후 다시 시도해주세요." },
-        { status: 429 },
+        { error: "잘못된 요청 형식입니다." },
+        { status: 400 },
       );
     }
 
-    const body = await request.json();
-    const { imageBase64, mimeType } = body as { imageBase64?: string; mimeType?: string };
+    const imageBase64 = typeof body.imageBase64 === "string" ? body.imageBase64 : "";
+    const rawMimeType = typeof body.mimeType === "string" ? body.mimeType : "image/jpeg";
 
     if (!imageBase64) {
       return NextResponse.json(
@@ -43,8 +62,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate base64 size (~5MB limit)
-    const sizeInBytes = (imageBase64.length * 3) / 4;
+    // Validate MIME type whitelist
+    const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
+    const mimeType = ALLOWED_MIME_TYPES.includes(rawMimeType) ? rawMimeType : "image/jpeg";
+
+    // Validate base64 format
+    if (!/^[A-Za-z0-9+/]+=*$/.test(imageBase64.slice(0, 100))) {
+      return NextResponse.json(
+        { error: "이미지 형식이 올바르지 않습니다." },
+        { status: 400 },
+      );
+    }
+
+    // Validate base64 size (~5MB limit, accounting for padding)
+    const paddingChars = (imageBase64.match(/=+$/) ?? [""])[0].length;
+    const sizeInBytes = (imageBase64.length * 3) / 4 - paddingChars;
     if (sizeInBytes > 5 * 1024 * 1024) {
       return NextResponse.json(
         { error: "이미지 크기가 너무 큽니다. 5MB 이하의 이미지를 사용해주세요." },
@@ -61,7 +93,7 @@ export async function POST(request: NextRequest) {
           parts: [
             {
               inlineData: {
-                mimeType: mimeType ?? "image/jpeg",
+                mimeType,
                 data: imageBase64,
               },
             },
@@ -121,17 +153,16 @@ export async function POST(request: NextRequest) {
     const readingId = await saveReading({
       sessionId,
       readingType: "gwansang",
-      inputData: { mimeType: mimeType ?? "image/jpeg" },
+      inputData: { mimeType },
       aiResult: validation.data as unknown as Record<string, unknown>,
-      ipHash: hashIp(ip),
+      ipHash: await hashIpSecure(ip),
     });
 
     return NextResponse.json({ reading: validation.data, readingId });
   } catch (error) {
-    const errMsg = error instanceof Error ? error.message : String(error);
-    console.error("Analysis error:", errMsg);
+    console.error("Analysis error:", error instanceof Error ? error.message : error);
     return NextResponse.json(
-      { error: `관상 분석 중 오류가 발생했습니다: ${errMsg.substring(0, 100)}` },
+      { error: "관상 분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요." },
       { status: 500 },
     );
   }

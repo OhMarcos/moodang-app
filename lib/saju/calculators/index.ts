@@ -14,6 +14,7 @@ import { calculateIChing } from "./iching-engine";
  */
 export async function calculateAllSystems(input: SajuInput): Promise<PreComputedData> {
   const longitudeDeg = lookupLongitude(input.birthPlace);
+  const fallbacksUsed: string[] = [];
 
   // Saju is the core engine — must succeed
   const saju = await calculateSaju(input);
@@ -25,6 +26,7 @@ export async function calculateAllSystems(input: SajuInput): Promise<PreComputed
   } catch (e) {
     console.error("[calculateAllSystems] Vedic engine failed, using fallback:", e);
     vedic = getVedicFallback(input);
+    fallbacksUsed.push("vedic");
   }
 
   let iching: PreComputedIChing;
@@ -33,6 +35,7 @@ export async function calculateAllSystems(input: SajuInput): Promise<PreComputed
   } catch (e) {
     console.error("[calculateAllSystems] IChing engine failed, using fallback:", e);
     iching = getIChingFallback();
+    fallbacksUsed.push("iching");
   }
 
   return {
@@ -43,6 +46,8 @@ export async function calculateAllSystems(input: SajuInput): Promise<PreComputed
       calculatedAt: new Date().toISOString(),
       trueSolarTimeUsed: !!input.birthPlace,
       longitudeDeg,
+      fallbacksUsed,
+      birthHourUnknown: false, // overridden by caller if birth hour was unknown
     },
   };
 }

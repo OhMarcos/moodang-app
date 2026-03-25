@@ -44,10 +44,13 @@ export default function GwansangPage() {
   }, []);
 
   const handleAnalyze = async () => {
-    if (!state.imageData) return;
+    if (!state.imageData || state.status === "analyzing") return;
 
     track.gwansangAnalysisStarted();
     setState((prev) => ({ ...prev, status: "analyzing", error: null }));
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 120_000); // 2 min timeout
 
     try {
       const response = await fetch("/api/gwansang/analyze", {
@@ -60,7 +63,10 @@ export default function GwansangPage() {
           imageBase64: state.imageData,
           mimeType: previewUrl.match(/^data:([^;]+);/)?.[1] ?? "image/jpeg",
         }),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         let errorMsg = "분석에 실패했습니다.";
@@ -87,7 +93,13 @@ export default function GwansangPage() {
         reading: data.reading,
       }));
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.";
+      clearTimeout(timeoutId);
+      let errorMsg = "알 수 없는 오류가 발생했습니다.";
+      if (err instanceof DOMException && err.name === "AbortError") {
+        errorMsg = "분석 시간이 초과되었습니다. 다시 시도해주세요.";
+      } else if (err instanceof Error) {
+        errorMsg = err.message;
+      }
       track.gwansangAnalysisFailed(errorMsg);
       setState((prev) => ({
         ...prev,

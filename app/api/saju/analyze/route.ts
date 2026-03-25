@@ -4,35 +4,72 @@ import { buildSajuSystemPrompt, buildSajuUserPrompt } from "@/lib/saju/saju-prom
 import type { SajuInput, SajuReading } from "@/lib/saju/types";
 import { validateSajuReading } from "@/lib/saju/validate";
 import { calculateAllSystems } from "@/lib/saju/calculators";
+import { validateEnv } from "@/lib/env";
 import {
-  checkIpRateLimit,
+  checkIpRateLimitAsync,
   checkDailyCap,
   buildSajuCacheKey,
   getSajuCache,
   setSajuCache,
+  hashIpSecure,
 } from "@/lib/rate-limit";
-import { saveReading, hashIp } from "@/lib/database";
+import { saveReading } from "@/lib/database";
 
 const RATE_LIMIT = 5; // per IP per window
 const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 
 export async function POST(request: NextRequest) {
   try {
+    // Fail fast if critical env vars are missing
+    const env = validateEnv();
+    if (!env.ok) {
+      return NextResponse.json(
+        { error: "서버 설정 오류입니다. 관리자에게 문의해주세요." },
+        { status: 503 },
+      );
+    }
+
     const ip =
       request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
 
-    // Per-IP rate limit
-    if (!checkIpRateLimit(ip, RATE_LIMIT, RATE_WINDOW_MS)) {
+    // Per-IP rate limit (persistent via Supabase)
+    if (!(await checkIpRateLimitAsync(ip, RATE_LIMIT, RATE_WINDOW_MS))) {
       return NextResponse.json(
         { error: "너무 많은 요청입니다. 잠시 후 다시 시도해주세요." },
         { status: 429 },
       );
     }
 
-    const body = await request.json();
-    const input = body as SajuInput;
+    let body: Record<string, unknown>;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { error: "잘못된 요청 형식입니다." },
+        { status: 400 },
+      );
+    }
 
-    if (!input.birthYear || !input.birthMonth || !input.birthDay || !input.gender) {
+    // Type coercion + required field check
+    const birthYear = Number(body.birthYear);
+    const birthMonth = Number(body.birthMonth);
+    const birthDay = Number(body.birthDay);
+    const birthHour = Number(body.birthHour ?? 12);
+    const birthMinute = Number(body.birthMinute ?? 0);
+    const gender = String(body.gender ?? "");
+    const calendarType = String(body.calendarType ?? "solar");
+    const name = String(body.name ?? "");
+    const birthPlace = body.birthPlace ? String(body.birthPlace) : undefined;
+    const currentConcern = body.currentConcern ? String(body.currentConcern) : undefined;
+
+    if ([birthYear, birthMonth, birthDay].some(isNaN)) {
+      return NextResponse.json(
+        { error: "생년월일은 숫자여야 합니다." },
+        { status: 400 },
+      );
+    }
+
+    if (!gender) {
       return NextResponse.json(
         { error: "필수 정보가 누락되었습니다." },
         { status: 400 },
@@ -41,35 +78,80 @@ export async function POST(request: NextRequest) {
 
     // Birth date range validation
     const currentYear = new Date().getFullYear();
-    if (input.birthYear < 1920 || input.birthYear > currentYear) {
+    if (birthYear < 1920 || birthYear > currentYear) {
       return NextResponse.json(
         { error: "생년은 1920년에서 올해 사이여야 합니다." },
         { status: 400 },
       );
     }
-    if (input.birthMonth < 1 || input.birthMonth > 12) {
+    if (birthMonth < 1 || birthMonth > 12) {
       return NextResponse.json(
         { error: "월은 1에서 12 사이여야 합니다." },
         { status: 400 },
       );
     }
-    if (input.birthDay < 1 || input.birthDay > 31) {
+
+    // Month-specific day validation (handles Feb 28/29, Apr 30, etc.)
+    const maxDay = new Date(birthYear, birthMonth, 0).getDate();
+    if (birthDay < 1 || birthDay > maxDay) {
       return NextResponse.json(
-        { error: "일은 1에서 31 사이여야 합니다." },
+        { error: `${birthMonth}월은 최대 ${maxDay}일까지입니다.` },
         { status: 400 },
       );
     }
-    if (!["male", "female"].includes(input.gender)) {
+
+    // Hour/Minute validation (-1 = unknown for hour)
+    if (isNaN(birthHour) || (birthHour !== -1 && (birthHour < 0 || birthHour > 23))) {
+      return NextResponse.json(
+        { error: "시간은 0-23 사이이거나 '모름'이어야 합니다." },
+        { status: 400 },
+      );
+    }
+    if (isNaN(birthMinute) || birthMinute < 0 || birthMinute > 59) {
+      return NextResponse.json(
+        { error: "분은 0-59 사이여야 합니다." },
+        { status: 400 },
+      );
+    }
+
+    if (!["male", "female"].includes(gender)) {
       return NextResponse.json(
         { error: "성별이 올바르지 않습니다." },
         { status: 400 },
       );
     }
+    if (!["solar", "lunar"].includes(calendarType)) {
+      return NextResponse.json(
+        { error: "달력 유형이 올바르지 않습니다." },
+        { status: 400 },
+      );
+    }
+
+    const input: SajuInput = {
+      name,
+      birthYear,
+      birthMonth,
+      birthDay,
+      birthHour: birthHour === -1 ? 12 : birthHour,
+      birthMinute,
+      gender: gender as "male" | "female",
+      calendarType: calendarType as "solar" | "lunar",
+      birthPlace,
+      currentConcern,
+    };
+
+    const isBirthHourUnknown = birthHour === -1;
 
     // ─── Pre-compute all calculations deterministically (needed for cache + API paths) ───
     let preComputed;
     try {
       preComputed = await calculateAllSystems(input);
+      if (isBirthHourUnknown) {
+        preComputed = {
+          ...preComputed,
+          metadata: { ...preComputed.metadata, birthHourUnknown: true },
+        };
+      }
     } catch (calcError) {
       const msg = calcError instanceof Error ? calcError.message : String(calcError);
       console.error("Saju calculation engine error:", msg);
@@ -190,15 +272,14 @@ export async function POST(request: NextRequest) {
       destinyTypeHanja: reading.destinyType?.hanja ?? null,
       dayMaster: reading.dayMaster ?? null,
       celebrityMatch: reading.celebrityMatch?.korean?.name ?? null,
-      ipHash: hashIp(ip),
+      ipHash: await hashIpSecure(ip),
     });
 
     return NextResponse.json({ reading, readingId, rawPillars, strength, yongShen, sajuChart });
   } catch (error) {
-    const errMsg = error instanceof Error ? error.message : String(error);
-    console.error("Saju analysis error:", errMsg);
+    console.error("Saju analysis error:", error instanceof Error ? error.message : error);
     return NextResponse.json(
-      { error: `사주 분석 중 오류가 발생했습니다: ${errMsg.substring(0, 100)}` },
+      { error: "사주 분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요." },
       { status: 500 },
     );
   }

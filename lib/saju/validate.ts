@@ -5,6 +5,7 @@
  *
  * When preComputed data is provided, cross-validates that
  * the AI response matches the deterministic calculations.
+ * Corrects AI deviations for critical algorithmic fields.
  */
 import type { SajuReading } from "./types";
 import type { PreComputedData } from "./calculators/types";
@@ -21,37 +22,70 @@ function hasNumbers(obj: Record<string, unknown>, keys: string[]): boolean {
   return keys.every((k) => typeof obj[k] === "number");
 }
 
+/** Clamp a number to [min, max] range */
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
 function isFortuneCategory(v: unknown): boolean {
   if (!isObj(v)) return false;
   return hasNumbers(v, ["score", "percentile"]) && hasStrings(v, ["summary", "detail", "advice"]);
 }
 
+/** Clamp fortune category scores to valid ranges */
+function clampFortuneCategory(v: Record<string, unknown>): void {
+  if (typeof v.score === "number") v.score = clamp(v.score, 0, 100);
+  if (typeof v.percentile === "number") v.percentile = clamp(v.percentile, 0, 100);
+}
+
 /**
  * Cross-validate AI output against pre-computed data.
- * Logs warnings but does not reject — AI interpretation may rephrase labels.
+ * Corrects critical deviations (elementBalance, hexagram) to match
+ * deterministic calculations. Logs all corrections.
  */
 function crossValidate(reading: SajuReading, preComputed: PreComputedData): void {
-  const warnings: string[] = [];
+  const corrections: string[] = [];
 
-  // Check elementBalance matches
+  // Correct elementBalance to match pre-computed values
   const eb = reading.elementBalance;
   const peb = preComputed.saju.elementBalance;
   if (eb) {
     for (const key of ["wood", "fire", "earth", "metal", "water"] as const) {
-      if (Math.abs(eb[key] - peb[key]) > 5) {
-        warnings.push(`elementBalance.${key}: AI=${eb[key]}, expected=${peb[key]}`);
+      if (Math.abs(eb[key] - peb[key]) > 10) {
+        corrections.push(`elementBalance.${key}: AI=${eb[key]} → corrected=${peb[key]}`);
+        eb[key] = peb[key];
       }
     }
   }
 
-  // Check hexagram number
+  // Correct hexagram number if AI deviates
   const iching = reading.iChing;
   if (iching && iching.hexagramNumber !== preComputed.iching.hexagramNumber) {
-    warnings.push(`hexagramNumber: AI=${iching.hexagramNumber}, expected=${preComputed.iching.hexagramNumber}`);
+    corrections.push(`hexagramNumber: AI=${iching.hexagramNumber} → corrected=${preComputed.iching.hexagramNumber}`);
+    iching.hexagramNumber = preComputed.iching.hexagramNumber;
+    iching.hexagramName = preComputed.iching.hexagramName;
+    iching.hexagramHanja = preComputed.iching.hexagramHanja;
   }
 
-  if (warnings.length > 0) {
-    console.warn("[Saju Cross-Validation] AI deviated from pre-computed data:", warnings);
+  if (corrections.length > 0) {
+    console.warn("[Saju Cross-Validation] Corrected AI deviations:", corrections);
+  }
+}
+
+/**
+ * Normalize elementBalance so sum ≈ 100.
+ * Handles cases where AI returns raw counts or off-scale values.
+ */
+function normalizeElementBalance(eb: Record<string, unknown>): void {
+  const keys = ["wood", "fire", "earth", "metal", "water"] as const;
+  const total = keys.reduce((sum, k) => sum + (typeof eb[k] === "number" ? (eb[k] as number) : 0), 0);
+
+  if (total > 0 && (total < 90 || total > 110)) {
+    for (const key of keys) {
+      if (typeof eb[key] === "number") {
+        eb[key] = Math.round(((eb[key] as number) / total) * 100);
+      }
+    }
   }
 }
 
@@ -73,6 +107,7 @@ export function validateSajuReading(
   if (!hasNumbers(r.elementBalance, ["wood", "fire", "earth", "metal", "water"])) {
     return { ok: false, error: "elementBalance 불완전" };
   }
+  normalizeElementBalance(r.elementBalance);
 
   // Destiny Type
   if (!isObj(r.destinyType)) return { ok: false, error: "destinyType 누락" };
@@ -85,6 +120,7 @@ export function validateSajuReading(
   if (typeof r.overallGrade.grade !== "string" || typeof r.overallGrade.nationalPercentile !== "number") {
     return { ok: false, error: "overallGrade 불완전" };
   }
+  r.overallGrade.nationalPercentile = clamp(r.overallGrade.nationalPercentile as number, 0, 100);
 
   // Life Narrative
   if (!isObj(r.lifeNarrative)) return { ok: false, error: "lifeNarrative 누락" };
@@ -92,11 +128,12 @@ export function validateSajuReading(
     return { ok: false, error: "lifeNarrative 불완전" };
   }
 
-  // Fortunes
+  // Fortunes — validate and clamp scores
   if (!isObj(r.fortunes)) return { ok: false, error: "fortunes 누락" };
   const fortunes = r.fortunes as Record<string, unknown>;
   for (const key of ["wealth", "love", "career", "health", "fame"]) {
     if (!isFortuneCategory(fortunes[key])) return { ok: false, error: `fortunes.${key} 누락/불완전` };
+    clampFortuneCategory(fortunes[key] as Record<string, unknown>);
   }
 
   // Hidden Self
@@ -113,7 +150,7 @@ export function validateSajuReading(
 
   const reading = raw as unknown as SajuReading;
 
-  // Cross-validate against pre-computed data if provided
+  // Cross-validate and correct against pre-computed data if provided
   if (preComputed) {
     crossValidate(reading, preComputed);
   }

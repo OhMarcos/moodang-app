@@ -1,12 +1,27 @@
 /**
  * Shared rate limiting + global daily cap + saju result caching.
  *
- * All state is in-memory (resets on server restart / redeploy).
- * For a small viral app on Vercel this is fine — each cold start
- * resets counters, which is a natural safety valve.
+ * Primary: Supabase-backed persistent rate limiting (survives Vercel cold starts).
+ * Fallback: In-memory rate limiting when Supabase is not configured.
  */
 
-// ─── Per-IP Rate Limiting ───
+import { isSupabaseConfigured, getServerSupabase } from "./database/supabase";
+
+// ─── Secure IP Hashing ───
+
+/**
+ * Hash an IP address using Web Crypto API (SHA-256).
+ * Returns a hex string prefix for privacy-safe storage.
+ */
+export async function hashIpSecure(ip: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(`moodang_rate_${ip}`);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return "ip_" + hashArray.slice(0, 8).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+// ─── Per-IP Rate Limiting (Supabase + in-memory fallback) ───
 
 interface RateLimitRecord {
   count: number;
@@ -15,7 +30,77 @@ interface RateLimitRecord {
 
 const ipLimits = new Map<string, RateLimitRecord>();
 
+/**
+ * Check per-IP rate limit.
+ * Uses Supabase if configured, otherwise falls back to in-memory.
+ */
+export async function checkIpRateLimitAsync(
+  ip: string,
+  maxRequests: number,
+  windowMs: number,
+): Promise<boolean> {
+  if (!isSupabaseConfigured()) {
+    return checkIpRateLimitMemory(ip, maxRequests, windowMs);
+  }
+
+  try {
+    const ipHash = await hashIpSecure(ip);
+    const supabase = getServerSupabase();
+    const windowStart = new Date(Date.now() - windowMs).toISOString();
+
+    // Upsert: increment count or reset if window expired
+    const { data, error } = await supabase
+      .from("rate_limits")
+      .select("request_count, window_start")
+      .eq("ip_hash", ipHash)
+      .eq("endpoint", "api")
+      .single();
+
+    if (error && error.code !== "PGRST116") {
+      // PGRST116 = no rows found — that's fine
+      console.error("[rate-limit] Supabase read error, falling back to memory:", error.message);
+      return checkIpRateLimitMemory(ip, maxRequests, windowMs);
+    }
+
+    if (!data || new Date(data.window_start) < new Date(windowStart)) {
+      // No record or window expired — reset
+      await supabase.from("rate_limits").upsert({
+        ip_hash: ipHash,
+        endpoint: "api",
+        request_count: 1,
+        window_start: new Date().toISOString(),
+      }, { onConflict: "ip_hash,endpoint" });
+      return true;
+    }
+
+    if (data.request_count >= maxRequests) {
+      return false;
+    }
+
+    // Increment count
+    await supabase
+      .from("rate_limits")
+      .update({ request_count: data.request_count + 1 })
+      .eq("ip_hash", ipHash)
+      .eq("endpoint", "api");
+
+    return true;
+  } catch (e) {
+    console.error("[rate-limit] Supabase rate limit failed, using memory fallback:", e);
+    return checkIpRateLimitMemory(ip, maxRequests, windowMs);
+  }
+}
+
+/** Synchronous in-memory rate limiting (original implementation) */
 export function checkIpRateLimit(
+  ip: string,
+  maxRequests: number,
+  windowMs: number,
+): boolean {
+  return checkIpRateLimitMemory(ip, maxRequests, windowMs);
+}
+
+function checkIpRateLimitMemory(
   ip: string,
   maxRequests: number,
   windowMs: number,
