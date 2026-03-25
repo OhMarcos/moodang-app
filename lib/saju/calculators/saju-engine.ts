@@ -102,8 +102,8 @@ function parsePillar(pillarStr: string): PillarData {
   };
 }
 
-function mapTenGodEntry(label: { key: string; korean: string; hanja: string }): TenGodEntry {
-  return { key: label.key, korean: label.korean, hanja: label.hanja };
+function mapTenGodEntry(label: { key?: string; korean?: string; hanja?: string } | undefined | null): TenGodEntry {
+  return { key: label?.key ?? "unknown", korean: label?.korean ?? "미상", hanja: label?.hanja ?? "未詳" };
 }
 
 function mapPillarTenGods(
@@ -112,12 +112,12 @@ function mapPillarTenGods(
   return {
     stem: {
       char: pillar.stem.char,
-      tenGod: mapTenGodEntry(pillar.stem.tenGod as { key: string; korean: string; hanja: string }),
+      tenGod: mapTenGodEntry(pillar.stem.tenGod as { key: string; korean: string; hanja: string } | undefined),
     },
     branch: {
       char: pillar.branch.char,
       tenGod: mapTenGodEntry(pillar.branch.tenGod),
-      hiddenStems: pillar.branch.hiddenStems.map((hs) => ({
+      hiddenStems: (pillar.branch.hiddenStems ?? []).map((hs) => ({
         stem: hs.stem,
         tenGod: mapTenGodEntry(hs.tenGod),
       })),
@@ -142,13 +142,13 @@ function resolveSolarDate(input: SajuInput): { year: number; month: number; day:
   return { year: input.birthYear, month: input.birthMonth, day: input.birthDay };
 }
 
-function mapTwelveStage(stage: SajuResult["twelveStages"]["year"]): TwelveStageInfo {
+function mapTwelveStage(stage: SajuResult["twelveStages"]["year"] | undefined | null): TwelveStageInfo {
   return {
-    key: stage.key,
-    korean: stage.korean,
-    hanja: stage.hanja,
-    meaning: stage.meaning,
-    strength: stage.strength,
+    key: stage?.key ?? "unknown",
+    korean: stage?.korean ?? "미상",
+    hanja: stage?.hanja ?? "未詳",
+    meaning: stage?.meaning ?? "",
+    strength: stage?.strength ?? "neutral",
   };
 }
 
@@ -156,16 +156,20 @@ function mapSinsalsByPosition(sinsalResult: SajuResult["sinsals"]): {
   year: SinsalInfo[]; month: SinsalInfo[]; day: SinsalInfo[]; hour: SinsalInfo[];
 } {
   const result = { year: [] as SinsalInfo[], month: [] as SinsalInfo[], day: [] as SinsalInfo[], hour: [] as SinsalInfo[] };
-  for (const match of sinsalResult.matches) {
+  for (const match of (sinsalResult?.matches ?? [])) {
+    const sinsal = match?.sinsal;
+    const pos = match?.position;
     const info: SinsalInfo = {
-      key: match.sinsal.key,
-      korean: match.sinsal.korean,
-      hanja: match.sinsal.hanja,
-      meaning: match.sinsal.meaning,
-      type: match.sinsal.type,
-      position: match.position,
+      key: sinsal?.key ?? "unknown",
+      korean: sinsal?.korean ?? "미상",
+      hanja: sinsal?.hanja ?? "",
+      meaning: sinsal?.meaning ?? "",
+      type: sinsal?.type ?? "unknown",
+      position: pos ?? "year",
     };
-    result[match.position].push(info);
+    if (pos && result[pos]) {
+      result[pos].push(info);
+    }
   }
   return result;
 }
@@ -209,9 +213,7 @@ export async function calculateSaju(input: SajuInput): Promise<PreComputedSaju> 
 
   // Day master info
   const dayStem = dayPillar.stem;
-  const dayMasterElement = result.tenGods.day.stem.tenGod.key === "dayMaster"
-    ? getStemElement(dayStem)
-    : "unknown";
+  const dayMasterElement = getStemElement(dayStem);
   const dayMasterPolarity = getStemPolarity(dayStem);
 
   // YongShen recommendations
@@ -262,26 +264,26 @@ export async function calculateSaju(input: SajuInput): Promise<PreComputedSaju> 
     twelveStages,
     sinsalsByPosition,
     strength: {
-      level: result.strength.level.key,
-      levelKr: result.strength.level.korean,
-      score: result.strength.score,
-      description: result.strength.description,
+      level: result.strength?.level?.key ?? "unknown",
+      levelKr: result.strength?.level?.korean ?? "미상",
+      score: result.strength?.score ?? 50,
+      description: result.strength?.description ?? "",
     },
     yongShen: {
       primary: {
-        element: result.yongShen.primary.key,
-        korean: result.yongShen.primary.korean,
-        hanja: result.yongShen.primary.hanja,
+        element: result.yongShen?.primary?.key ?? "unknown",
+        korean: result.yongShen?.primary?.korean ?? "미상",
+        hanja: result.yongShen?.primary?.hanja ?? "未詳",
       },
-      secondary: result.yongShen.secondary
+      secondary: result.yongShen?.secondary
         ? {
-            element: result.yongShen.secondary.key,
-            korean: result.yongShen.secondary.korean,
-            hanja: result.yongShen.secondary.hanja,
+            element: result.yongShen.secondary.key ?? "unknown",
+            korean: result.yongShen.secondary.korean ?? "미상",
+            hanja: result.yongShen.secondary.hanja ?? "未詳",
           }
         : null,
-      method: result.yongShen.method.korean,
-      reasoning: result.yongShen.reasoning,
+      method: result.yongShen?.method?.korean ?? "미상",
+      reasoning: result.yongShen?.reasoning ?? "",
       recommendations,
     },
     elementBalance: elementCounts,
@@ -308,30 +310,30 @@ export async function calculateSaju(input: SajuInput): Promise<PreComputedSaju> 
       age: yl.age,
     })),
     relations: {
-      stemCombinations: result.relations.combinations
-        .filter((c) => "pair" in c && c.type.key === "stemCombination")
+      stemCombinations: (result.relations?.combinations ?? [])
+        .filter((c) => "pair" in c && c.type?.key === "stemCombination")
         .map((c) => ("pair" in c ? `${(c as { pair: string[] }).pair.join("+")} → ${c.resultElement?.korean ?? ""}` : "")),
-      branchCombinations: result.relations.combinations
-        .filter((c) => c.type.key !== "stemCombination")
-        .map((c) => `${c.type.korean}: ${"pair" in c ? (c as { pair: string[] }).pair.join("+") : "branches" in c ? (c as { branches: string[] }).branches.join("+") : ""}`),
+      branchCombinations: (result.relations?.combinations ?? [])
+        .filter((c) => c.type?.key !== "stemCombination")
+        .map((c) => `${c.type?.korean ?? "합"}: ${"pair" in c ? (c as { pair: string[] }).pair.join("+") : "branches" in c ? (c as { branches: string[] }).branches.join("+") : ""}`),
       clashes: [
-        ...result.relations.stemClashes.map((c) => `천간충: ${c.pair.join("↔")}`),
-        ...result.relations.clashes.map((c) => `지지충: ${c.pair.join("↔")}`),
+        ...(result.relations?.stemClashes ?? []).map((c) => `천간충: ${c.pair.join("↔")}`),
+        ...(result.relations?.clashes ?? []).map((c) => `지지충: ${c.pair.join("↔")}`),
       ],
-      punishments: result.relations.punishments.map(
-        (p) => `${p.punishmentType.korean}: ${p.branches.join("+")}`
+      punishments: (result.relations?.punishments ?? []).map(
+        (p) => `${p.punishmentType?.korean ?? "형"}: ${p.branches.join("+")}`
       ),
-      harms: result.relations.harms.map((h) => `지지해: ${h.pair.join("↔")}`),
+      harms: (result.relations?.harms ?? []).map((h) => `지지해: ${h.pair.join("↔")}`),
     },
-    sinsals: result.sinsals.matches.map((s) => ({
-      key: s.sinsal.key,
-      label: s.sinsal.korean,
+    sinsals: (result.sinsals?.matches ?? []).map((s) => ({
+      key: s.sinsal?.key ?? "unknown",
+      label: s.sinsal?.korean ?? "미상",
     })),
     lunar: {
-      year: result.lunar.lunarYear,
-      month: result.lunar.lunarMonth,
-      day: result.lunar.lunarDay,
-      isLeapMonth: result.lunar.isLeapMonth,
+      year: result.lunar?.lunarYear ?? input.birthYear,
+      month: result.lunar?.lunarMonth ?? input.birthMonth,
+      day: result.lunar?.lunarDay ?? input.birthDay,
+      isLeapMonth: result.lunar?.isLeapMonth ?? false,
     },
   };
 }
@@ -392,16 +394,16 @@ function countElementsFromPillars(result: SajuResult): { wood: number; fire: num
 
 function countTenGodsFromResult(result: SajuResult): Record<string, number> {
   const counts: Record<string, number> = {};
-  const pillars = [result.tenGods.year, result.tenGods.month, result.tenGods.hour];
+  const pillars = [result.tenGods?.year, result.tenGods?.month, result.tenGods?.hour].filter(Boolean);
   for (const p of pillars) {
-    const stemKey = p.stem.tenGod.key;
-    counts[stemKey] = (counts[stemKey] ?? 0) + 1;
-    const branchKey = p.branch.tenGod.key;
-    counts[branchKey] = (counts[branchKey] ?? 0) + 1;
+    const stemKey = p?.stem?.tenGod?.key;
+    if (stemKey) counts[stemKey] = (counts[stemKey] ?? 0) + 1;
+    const branchKey = p?.branch?.tenGod?.key;
+    if (branchKey) counts[branchKey] = (counts[branchKey] ?? 0) + 1;
   }
   // Day branch only (day stem is dayMaster)
-  const dayBranchKey = result.tenGods.day.branch.tenGod.key;
-  counts[dayBranchKey] = (counts[dayBranchKey] ?? 0) + 1;
+  const dayBranchKey = result.tenGods?.day?.branch?.tenGod?.key;
+  if (dayBranchKey) counts[dayBranchKey] = (counts[dayBranchKey] ?? 0) + 1;
   return counts;
 }
 

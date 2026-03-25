@@ -350,14 +350,14 @@ function formatSajuData(saju: PreComputedData["saju"]): string {
     `- 음양: ${dayMaster.polarityKr}`,
     ``,
     `### 십신 배치 (Ten Gods)`,
-    `- 년주 천간: ${tenGods.year.stem.char} → ${tenGods.year.stem.tenGod.korean}(${tenGods.year.stem.tenGod.hanja})`,
-    `- 년주 지지: ${tenGods.year.branch.char} → ${tenGods.year.branch.tenGod.korean}(${tenGods.year.branch.tenGod.hanja})`,
-    `- 월주 천간: ${tenGods.month.stem.char} → ${tenGods.month.stem.tenGod.korean}(${tenGods.month.stem.tenGod.hanja})`,
-    `- 월주 지지: ${tenGods.month.branch.char} → ${tenGods.month.branch.tenGod.korean}(${tenGods.month.branch.tenGod.hanja})`,
-    `- 일주 천간: ${tenGods.day.stem.char} → 일간(日干) [본인]`,
-    `- 일주 지지: ${tenGods.day.branch.char} → ${tenGods.day.branch.tenGod.korean}(${tenGods.day.branch.tenGod.hanja})`,
-    `- 시주 천간: ${tenGods.hour.stem.char} → ${tenGods.hour.stem.tenGod.korean}(${tenGods.hour.stem.tenGod.hanja})`,
-    `- 시주 지지: ${tenGods.hour.branch.char} → ${tenGods.hour.branch.tenGod.korean}(${tenGods.hour.branch.tenGod.hanja})`,
+    `- 년주 천간: ${tenGods.year?.stem?.char ?? "?"} → ${tenGods.year?.stem?.tenGod?.korean ?? "미상"}(${tenGods.year?.stem?.tenGod?.hanja ?? ""})`,
+    `- 년주 지지: ${tenGods.year?.branch?.char ?? "?"} → ${tenGods.year?.branch?.tenGod?.korean ?? "미상"}(${tenGods.year?.branch?.tenGod?.hanja ?? ""})`,
+    `- 월주 천간: ${tenGods.month?.stem?.char ?? "?"} → ${tenGods.month?.stem?.tenGod?.korean ?? "미상"}(${tenGods.month?.stem?.tenGod?.hanja ?? ""})`,
+    `- 월주 지지: ${tenGods.month?.branch?.char ?? "?"} → ${tenGods.month?.branch?.tenGod?.korean ?? "미상"}(${tenGods.month?.branch?.tenGod?.hanja ?? ""})`,
+    `- 일주 천간: ${tenGods.day?.stem?.char ?? "?"} → 일간(日干) [본인]`,
+    `- 일주 지지: ${tenGods.day?.branch?.char ?? "?"} → ${tenGods.day?.branch?.tenGod?.korean ?? "미상"}(${tenGods.day?.branch?.tenGod?.hanja ?? ""})`,
+    `- 시주 천간: ${tenGods.hour?.stem?.char ?? "?"} → ${tenGods.hour?.stem?.tenGod?.korean ?? "미상"}(${tenGods.hour?.stem?.tenGod?.hanja ?? ""})`,
+    `- 시주 지지: ${tenGods.hour?.branch?.char ?? "?"} → ${tenGods.hour?.branch?.tenGod?.korean ?? "미상"}(${tenGods.hour?.branch?.tenGod?.hanja ?? ""})`,
   ];
 
   // Hidden stems
@@ -367,7 +367,7 @@ function formatSajuData(saju: PreComputedData["saju"]): string {
   for (let i = 0; i < pillarKeys.length; i++) {
     const p = tenGods[pillarKeys[i]];
     if (p.branch.hiddenStems.length > 0) {
-      const hs = p.branch.hiddenStems.map(h => `${h.stem}(${h.tenGod.korean})`).join(", ");
+      const hs = (p.branch.hiddenStems ?? []).map(h => `${h.stem}(${h.tenGod?.korean ?? "미상"})`).join(", ");
       hiddenStemsLines.push(`- ${pillarNames[i]} 지지 장간: ${hs}`);
     }
   }
@@ -385,26 +385,26 @@ function formatSajuData(saju: PreComputedData["saju"]): string {
   lines.push(
     ``,
     `### 신강/신약 (Day Master Strength)`,
-    `- 강도: ${strength.levelKr} (${strength.level})`,
-    `- 점수: ${strength.score}`,
-    `- 설명: ${strength.description}`,
+    `- 강도: ${strength?.levelKr ?? "미상"} (${strength?.level ?? "unknown"})`,
+    `- 점수: ${strength?.score ?? 50}`,
+    `- 설명: ${strength?.description ?? ""}`,
   );
 
   // YongShen
   lines.push(
     ``,
     `### 용신 (YongShen)`,
-    `- 주용신: ${yongShen.primary.korean}(${yongShen.primary.hanja}) [${yongShen.primary.element}]`,
+    `- 주용신: ${yongShen.primary?.korean ?? "미상"}(${yongShen.primary?.hanja ?? ""}) [${yongShen.primary?.element ?? "unknown"}]`,
   );
   if (yongShen.secondary) {
-    lines.push(`- 보조용신: ${yongShen.secondary.korean}(${yongShen.secondary.hanja}) [${yongShen.secondary.element}]`);
+    lines.push(`- 보조용신: ${yongShen.secondary?.korean ?? "미상"}(${yongShen.secondary?.hanja ?? ""}) [${yongShen.secondary?.element ?? "unknown"}]`);
   }
   lines.push(
-    `- 방법: ${yongShen.method}`,
-    `- 근거: ${yongShen.reasoning}`,
-    `- 추천 색상: ${yongShen.recommendations.colors.join(", ")}`,
-    `- 추천 방향: ${yongShen.recommendations.directions.join(", ")}`,
-    `- 추천 숫자: ${yongShen.recommendations.numbers.join(", ")}`,
+    `- 방법: ${yongShen?.method ?? "미상"}`,
+    `- 근거: ${yongShen?.reasoning ?? ""}`,
+    `- 추천 색상: ${(yongShen?.recommendations?.colors ?? []).join(", ")}`,
+    `- 추천 방향: ${(yongShen?.recommendations?.directions ?? []).join(", ")}`,
+    `- 추천 숫자: ${(yongShen?.recommendations?.numbers ?? []).join(", ")}`,
   );
 
   // Element balance
@@ -450,8 +450,8 @@ function formatSajuData(saju: PreComputedData["saju"]): string {
     `### 12운성 (Twelve Life Stages)`,
     `| 구분 | 년주 | 월주 | 일주 | 시주 |`,
     `|------|------|------|------|------|`,
-    `| 12운성 | ${twelveStages.year.korean} | ${twelveStages.month.korean} | ${twelveStages.day.korean} | ${twelveStages.hour.korean} |`,
-    `| 강약 | ${twelveStages.year.strength} | ${twelveStages.month.strength} | ${twelveStages.day.strength} | ${twelveStages.hour.strength} |`,
+    `| 12운성 | ${twelveStages.year?.korean ?? "미상"} | ${twelveStages.month?.korean ?? "미상"} | ${twelveStages.day?.korean ?? "미상"} | ${twelveStages.hour?.korean ?? "미상"} |`,
+    `| 강약 | ${twelveStages.year?.strength ?? "-"} | ${twelveStages.month?.strength ?? "-"} | ${twelveStages.day?.strength ?? "-"} | ${twelveStages.hour?.strength ?? "-"} |`,
   );
 
   // Sinsals by position
@@ -461,7 +461,7 @@ function formatSajuData(saju: PreComputedData["saju"]): string {
   for (const pos of positionKeys) {
     const positionSinsals = sinsalsByPosition[pos];
     if (positionSinsals.length > 0) {
-      sinsalPositionLines.push(`- ${positionLabels[pos]}: ${positionSinsals.map(s => `${s.korean}(${s.type})`).join(", ")}`);
+      sinsalPositionLines.push(`- ${positionLabels[pos]}: ${positionSinsals.map(s => `${s?.korean ?? "미상"}(${s?.type ?? ""})`).join(", ")}`);
     }
   }
 
