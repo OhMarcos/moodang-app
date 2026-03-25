@@ -203,79 +203,91 @@ export async function POST(request: NextRequest) {
     const systemPrompt = buildSajuSystemPrompt();
     const userPrompt = buildSajuUserPrompt(input, preComputed);
 
-    const response = await ai.models.generateContent({
-      model: GEMINI_MODEL,
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: userPrompt }],
+    // Retry loop: Gemini may occasionally return invalid JSON
+    const MAX_RETRIES = 2;
+    let lastError = "";
+
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      const response = await ai.models.generateContent({
+        model: GEMINI_MODEL,
+        contents: [
+          {
+            role: "user",
+            parts: [{ text: userPrompt }],
+          },
+        ],
+        config: {
+          systemInstruction: systemPrompt,
+          temperature: attempt === 0 ? 0.6 : 0.4, // lower temp on retry
+          maxOutputTokens: 24576,
+          responseMimeType: "application/json",
         },
-      ],
-      config: {
-        systemInstruction: systemPrompt,
-        temperature: 0.6,
-        maxOutputTokens: 24576,
-        responseMimeType: "application/json",
-      },
-    });
+      });
 
-    const text = response.text ?? "";
+      const text = response.text ?? "";
 
-    if (!text) {
-      return NextResponse.json(
-        { error: "사주 분석 결과를 받지 못했습니다. 다시 시도해주세요." },
-        { status: 500 },
-      );
+      if (!text) {
+        lastError = "empty_response";
+        console.warn(`[saju] Empty response on attempt ${attempt + 1}`);
+        continue;
+      }
+
+      let jsonStr = text;
+      const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+      if (codeBlockMatch?.[1]) {
+        jsonStr = codeBlockMatch[1];
+      }
+
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(jsonStr.trim());
+      } catch (parseError) {
+        lastError = "json_parse";
+        console.warn(`[saju] JSON parse failed on attempt ${attempt + 1}:`, text.substring(0, 300));
+        continue;
+      }
+
+      // Runtime validation — prevent frontend crashes from malformed AI responses
+      const validation = validateSajuReading(parsed, preComputed);
+      if (!validation.ok) {
+        lastError = `validation: ${validation.error}`;
+        console.warn(`[saju] Validation failed on attempt ${attempt + 1}:`, validation.error);
+        continue;
+      }
+
+      // Success — break out of retry loop
+      // Cache + persist + return are handled below
+      const reading = validation.data as SajuReading;
+
+      setSajuCache(cacheKey, JSON.stringify(reading));
+
+      const sessionId = request.headers.get("x-session-id") ?? "anonymous";
+      const readingId = await saveReading({
+        sessionId,
+        readingType: "saju",
+        inputData: input as unknown as Record<string, unknown>,
+        precomputedData: preComputed as unknown as Record<string, unknown>,
+        aiResult: reading as unknown as Record<string, unknown>,
+        fortuneGrade: reading.overallGrade?.grade ?? null,
+        destinyTypeHanja: reading.destinyType?.hanja ?? null,
+        dayMaster: reading.dayMaster ?? null,
+        celebrityMatch: reading.celebrityMatch?.korean?.name ?? null,
+        ipHash: await hashIpSecure(ip),
+      });
+
+      return NextResponse.json({ reading, readingId, rawPillars, strength, yongShen, sajuChart });
     }
 
-    let jsonStr = text;
-    const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-    if (codeBlockMatch?.[1]) {
-      jsonStr = codeBlockMatch[1];
-    }
-
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(jsonStr.trim());
-    } catch (parseError) {
-      console.error("JSON parse failed:", text.substring(0, 500));
-      console.error("Parse error:", parseError);
-      return NextResponse.json(
-        { error: "사주 분석 결과를 처리할 수 없습니다. 다시 시도해주세요." },
-        { status: 500 },
-      );
-    }
-
-    // Runtime validation — prevent frontend crashes from malformed AI responses
-    const validation = validateSajuReading(parsed, preComputed);
-    if (!validation.ok) {
-      console.error("Saju validation failed:", validation.error);
-      return NextResponse.json(
-        { error: "사주 분석 결과가 불완전합니다. 다시 시도해주세요." },
-        { status: 500 },
-      );
-    }
-
-    // ─── Cache the result ───
-    setSajuCache(cacheKey, JSON.stringify(validation.data));
-
-    // ─── Persist to database (non-blocking, doesn't fail the request) ───
-    const sessionId = request.headers.get("x-session-id") ?? "anonymous";
-    const reading = validation.data as SajuReading;
-    const readingId = await saveReading({
-      sessionId,
-      readingType: "saju",
-      inputData: input as unknown as Record<string, unknown>,
-      precomputedData: preComputed as unknown as Record<string, unknown>,
-      aiResult: reading as unknown as Record<string, unknown>,
-      fortuneGrade: reading.overallGrade?.grade ?? null,
-      destinyTypeHanja: reading.destinyType?.hanja ?? null,
-      dayMaster: reading.dayMaster ?? null,
-      celebrityMatch: reading.celebrityMatch?.korean?.name ?? null,
-      ipHash: await hashIpSecure(ip),
-    });
-
-    return NextResponse.json({ reading, readingId, rawPillars, strength, yongShen, sajuChart });
+    // All retries exhausted
+    console.error(`[saju] All ${MAX_RETRIES + 1} attempts failed. Last error: ${lastError}`);
+    const errorMessages: Record<string, string> = {
+      empty_response: "사주 분석 결과를 받지 못했습니다. 다시 시도해주세요.",
+      json_parse: "사주 분석 결과를 처리할 수 없습니다. 다시 시도해주세요.",
+    };
+    return NextResponse.json(
+      { error: errorMessages[lastError] ?? "사주 분석 결과가 불완전합니다. 다시 시도해주세요." },
+      { status: 500 },
+    );
   } catch (error) {
     console.error("Saju analysis error:", error instanceof Error ? error.message : error);
     return NextResponse.json(
