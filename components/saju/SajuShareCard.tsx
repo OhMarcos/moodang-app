@@ -243,14 +243,6 @@ function drawCard(ctx: CanvasRenderingContext2D, reading: SajuReading, name: str
     ctx.fillText(`${verdictLabel}  ·  ${agreement}/3 시스템 일치`, s / 2, convY + 12);
   }
 
-  // Celebrity match one-liner
-  const celY = convY + 40;
-  const cel = reading.celebrityMatch.korean;
-  ctx.font = `italic 20px "Noto Serif KR", serif`;
-  ctx.textAlign = "center";
-  ctx.fillStyle = `${C.gold}cc`;
-  ctx.fillText(`유명인 매칭: ${cel.name} (${cel.similarity}% 유사)`, s / 2, celY);
-
   // Watermark
   ctx.font = `bold 18px sans-serif`;
   ctx.textAlign = "right";

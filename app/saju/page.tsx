@@ -651,7 +651,7 @@ export default function SajuPage() {
                           <p className="text-2xl font-bold font-[family-name:var(--font-serif)]" style={{ color: stemElementColor[p.stem] ?? "inherit" }}>{p.stem}</p>
                           <p className="text-[10px] text-[var(--color-text-muted)]">{p.stemKr}</p>
                           <p className="text-[10px] mt-0.5" style={{ color: isDayMaster ? "var(--color-mystic-purple-light)" : "var(--color-text-secondary)" }}>
-                            {isDayMaster ? "일주" : tg.stem.tenGod.korean}
+                            {isDayMaster ? "일주" : tg?.stem?.tenGod?.korean ?? ""}
                           </p>
                         </div>
                       );
@@ -667,7 +667,7 @@ export default function SajuPage() {
                         <div key={`branch-${pos}`} className={`py-2.5 rounded-md ${isDayMaster ? "bg-[var(--color-mystic-purple)]/10 border border-[var(--color-mystic-purple)]/20" : "bg-[var(--color-bg-base)]"}`}>
                           <p className="text-2xl font-bold font-[family-name:var(--font-serif)]" style={{ color: branchElementColor[p.branch] ?? "inherit" }}>{p.branch}</p>
                           <p className="text-[10px] text-[var(--color-text-muted)]">{p.branchKr}</p>
-                          <p className="text-[10px] text-[var(--color-text-secondary)] mt-0.5">{tg.branch.tenGod.korean}</p>
+                          <p className="text-[10px] text-[var(--color-text-secondary)] mt-0.5">{tg?.branch?.tenGod?.korean ?? ""}</p>
                         </div>
                       );
                     })}
@@ -681,7 +681,7 @@ export default function SajuPage() {
                           {tg.branch.hiddenStems.map((hs, i) => (
                             <p key={i} className="text-[10px] text-[var(--color-text-secondary)]">
                               <span className="font-medium" style={{ color: stemElementColor[hs.stem] ?? "inherit" }}>{hs.stem}</span>
-                              <span className="text-[var(--color-text-muted)]"> {hs.tenGod.korean}</span>
+                              <span className="text-[var(--color-text-muted)]"> {hs?.tenGod?.korean ?? ""}</span>
                             </p>
                           ))}
                         </div>
@@ -725,9 +725,9 @@ export default function SajuPage() {
                     </div>
                     <div className="p-2 rounded-lg bg-[var(--color-bg-base)] text-center">
                       <p className="text-[10px] text-[var(--color-text-muted)]">용신</p>
-                      <p className="text-sm font-bold text-[var(--color-sacred-gold)]">{sajuChart.yongShen.primary.korean}</p>
-                      {sajuChart.yongShen.secondary && (
-                        <p className="text-[10px] text-[var(--color-text-muted)]">보: {sajuChart.yongShen.secondary.korean}</p>
+                      <p className="text-sm font-bold text-[var(--color-sacred-gold)]">{sajuChart?.yongShen?.primary?.korean ?? ""}</p>
+                      {sajuChart?.yongShen?.secondary && (
+                        <p className="text-[10px] text-[var(--color-text-muted)]">보: {sajuChart.yongShen.secondary?.korean ?? ""}</p>
                       )}
                     </div>
                     <div className="p-2 rounded-lg bg-[var(--color-bg-base)] text-center">
