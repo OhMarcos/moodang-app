@@ -349,13 +349,13 @@ export default function SajuPage() {
           href="/"
           className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--color-mystic-purple)]/10 border border-[var(--color-mystic-purple)]/20 text-xs text-[var(--color-mystic-purple-light)] mb-4"
         >
-          4-System Convergence
+          3-System Convergence
         </Link>
         <h1 className="font-[family-name:var(--font-serif)] text-3xl font-bold text-purple-gradient mb-2">
           운명교차점
         </h1>
         <p className="text-sm text-[var(--color-text-secondary)]">
-          동서양 4대 운명학이 만나는 순간 — 당신만의 에너지 지도
+          동서양 3대 운명학이 만나는 순간 — 당신만의 에너지 지도
         </p>
       </header>
 
@@ -572,17 +572,17 @@ export default function SajuPage() {
               readingId={readingId}
             />
 
-            {/* ═══ HERO: Quad Convergence (4대 시스템 합의점) ═══ */}
+            {/* ═══ HERO: Triple Convergence (3대 시스템 합의점) ═══ */}
             {r.quadConvergence && (
               <section className="relative p-6 rounded-2xl bg-gradient-to-b from-[var(--color-teal)]/15 to-[var(--color-bg-card)] border border-[var(--color-teal)]/30 overflow-hidden">
                 <div className="absolute inset-0 opacity-5 bg-[radial-gradient(circle_at_center,var(--color-teal)_0%,transparent_70%)]" />
                 <div className="relative">
                   <div className="flex items-center justify-center gap-2 mb-4">
                     <h3 className="font-[family-name:var(--font-serif)] font-bold text-sm text-[var(--color-teal)]">
-                      4대 시스템 합의점
+                      3대 시스템 합의점
                     </h3>
                     <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-[var(--color-teal)]/10 text-[var(--color-teal)]">
-                      {r.quadConvergence.agreementLevel}/4 일치
+                      {r.quadConvergence.agreementLevel}/3 일치
                     </span>
                   </div>
                   <p className="text-xs text-[var(--color-text-muted)] text-center mb-2">

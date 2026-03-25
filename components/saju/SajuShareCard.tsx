@@ -115,11 +115,11 @@ function drawCard(ctx: CanvasRenderingContext2D, reading: SajuReading, name: str
   ctx.beginPath(); ctx.moveTo(fi + 10, s - fi - cm); ctx.lineTo(fi + 10, s - fi - 10); ctx.lineTo(fi + cm, s - fi - 10); ctx.stroke();
   ctx.beginPath(); ctx.moveTo(s - fi - cm, s - fi - 10); ctx.lineTo(s - fi - 10, s - fi - 10); ctx.lineTo(s - fi - 10, s - fi - cm); ctx.stroke();
 
-  // Quad Lens badge
+  // Triple Lens badge
   ctx.font = `bold 14px "SF Mono", "Menlo", monospace`;
   ctx.textAlign = "center";
   ctx.fillStyle = C.teal;
-  ctx.fillText("QUAD LENS — 사중 렌즈 분석", s / 2, PAD + 40);
+  ctx.fillText("TRIPLE LENS — 삼중 렌즈 분석", s / 2, PAD + 40);
 
   // Name
   ctx.font = `500 24px "Noto Serif KR", serif`;
@@ -223,7 +223,7 @@ function drawCard(ctx: CanvasRenderingContext2D, reading: SajuReading, name: str
     ctx.fill();
   }
 
-  // Quad Convergence verdict
+  // Triple Convergence verdict
   const convY = barStartY + FORTUNE_LABELS.length * barGap + 8;
   if (reading.quadConvergence) {
     const verdictLabel = reading.quadConvergence.energyVerdictKr;
@@ -240,7 +240,7 @@ function drawCard(ctx: CanvasRenderingContext2D, reading: SajuReading, name: str
     ctx.font = `bold 20px "Noto Serif KR", serif`;
     ctx.textAlign = "center";
     ctx.fillStyle = C.teal;
-    ctx.fillText(`${verdictLabel}  ·  ${agreement}/4 시스템 일치`, s / 2, convY + 12);
+    ctx.fillText(`${verdictLabel}  ·  ${agreement}/3 시스템 일치`, s / 2, convY + 12);
   }
 
   // Celebrity match one-liner

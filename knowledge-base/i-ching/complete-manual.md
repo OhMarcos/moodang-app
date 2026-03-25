@@ -38,11 +38,10 @@ The I Ching's fundamental principle is that **change is the only constant in the
 
 ### Role in OH-MOODANG
 
-In the Quad Lens system, 주역 serves as the **실시간 의사결정 오라클** (real-time decision oracle):
+In the Triple Lens system, 주역 serves as the **실시간 의사결정 오라클** (real-time decision oracle):
 - 사주팔자 tells you WHO you are (fixed life blueprint)
 - Vedic Dasha tells you WHEN things happen (planetary timing)
 - 주역 tells you WHAT TO DO right now (situational wisdom)
-- 수비학 tells you WHY through numbers (vibrational patterns)
 
 ---
 
@@ -350,7 +349,7 @@ Each hexagram (괘 / 卦) consists of 6 lines stacked from bottom to top:
 3. 주역 점괘 → 현재 상황 + 방향성 도출
 4. 사주 오행 × 괘 오행 교차 → 행동 강도 조절
 5. Vedic Transit × 변효 → 타이밍 정밀화
-6. 수비학 Personal Year × 괘 → 연간 맥락 확인
+6. 대운/세운 × 괘 → 연간 맥락 확인
 7. 통합 Action Item 도출
 ```
 
@@ -431,7 +430,7 @@ Each hexagram (괘 / 卦) consists of 6 lines stacked from bottom to top:
 
 ---
 
-*This manual represents a comprehensive overview of the I Ching (주역) divination system based on 3,000+ years of documented tradition, scholarly research, and practical application. In the OH-MOODANG Quad Lens system, it serves as the real-time decision oracle, complementing the constitutional analysis of 사주팔자, the planetary timing of Vedic Dasha, and the vibrational patterns of 수비학.*
+*This manual represents a comprehensive overview of the I Ching (주역) divination system based on 3,000+ years of documented tradition, scholarly research, and practical application. In the OH-MOODANG Triple Lens system, it serves as the real-time decision oracle, complementing the constitutional analysis of 사주팔자 and the planetary timing of Vedic Dasha.*
 
 *Manual v1.0 — March 22, 2026*
 *OH-MOODANG (무당) - Otherhand Ventures*

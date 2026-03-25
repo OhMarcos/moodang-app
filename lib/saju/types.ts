@@ -143,7 +143,7 @@ export interface LuckBooster {
   effect: string;
 }
 
-// --- Quad Lens: Vedic Dasha ---
+// --- Triple Lens: Vedic Dasha ---
 
 export interface VedicDasha {
   /** Current Nakshatra (birth star) */
@@ -160,7 +160,7 @@ export interface VedicDasha {
   timingAdvice: string;
 }
 
-// --- Quad Lens: I Ching ---
+// --- Triple Lens: I Ching ---
 
 export interface IChingReading {
   /** Primary hexagram number (1-64) */
@@ -183,7 +183,7 @@ export interface IChingReading {
   actionVerdict: string;
 }
 
-// --- Quad Lens: Convergence ---
+// --- Triple Lens: Convergence ---
 
 export interface QuadConvergence {
   /** Overall energy verdict: expansion/stability/transformation/contraction */
@@ -194,9 +194,9 @@ export interface QuadConvergence {
   agreementLevel: number;
   /** Systems that converge on same conclusion */
   convergingSystems: string[];
-  /** Unified core message synthesizing all 4 systems */
+  /** Unified core message synthesizing all 3 systems */
   coreMessage: string;
-  /** "The one thing to do now" — synthesized action from all 4 lenses */
+  /** "The one thing to do now" — synthesized action from all 3 lenses */
   oneAction: string;
   /** Cross-system insight that no single system could reveal alone */
   crossInsight: string;

@@ -26,7 +26,7 @@ CREATE TABLE fortune_readings (
     saju_data JSONB NOT NULL, -- 사주 계산 결과
     vedic_data JSONB, -- Vedic Dasha 결과
     iching_data JSONB, -- 주역 결과
-    numerology_data JSONB, -- 수비학 결과
+    numerology_data JSONB, -- (deprecated, 수비학 제거됨)
     face_analysis_data JSONB, -- 관상 분석 결과 (이미지 URL 포함)
     ai_interpretation TEXT NOT NULL, -- Gemini 해석 결과
     fortune_grade TEXT, -- SSS, SS, S, A, B, C

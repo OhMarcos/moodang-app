@@ -1,4 +1,4 @@
-// ─── Pre-computed data types for all 4 calculation systems ───
+// ─── Pre-computed data types for all 3 calculation systems ───
 
 export interface PillarData {
   stem: string;       // 천간 한자 (甲,乙,丙,丁...)
