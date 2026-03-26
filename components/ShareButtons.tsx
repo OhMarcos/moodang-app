@@ -9,6 +9,7 @@ import {
   trackShareEvent,
 } from "@/lib/sharing";
 import { track } from "@/lib/analytics";
+import { useI18n } from "@/lib/i18n/context";
 
 interface ShareButtonsProps {
   canvasRef: RefObject<HTMLCanvasElement | null>;
@@ -29,6 +30,7 @@ export default function ShareButtons({
   accent = "var(--color-sacred-gold)",
   readingId,
 }: ShareButtonsProps) {
+  const { t } = useI18n();
   const [feedback, setFeedback] = useState<FeedbackState>("idle");
 
   const flash = (state: FeedbackState) => {
@@ -51,7 +53,8 @@ export default function ShareButtons({
     const canvas = canvasRef.current;
     if (!canvas) return;
     const url = generateShareUrl({ type, nickname, readingId });
-    const text = `${nickname ? `"${nickname}" — ` : ""}${type === "gwansang" ? "AI 관상 분석" : "사주팔자 분석"} 결과\n나도 해보기 → ${url}`;
+    const typeLabel = type === "gwansang" ? t("share.gwansangLabel") : t("share.sajuLabel");
+    const text = `${nickname ? `"${nickname}" — ` : ""}${typeLabel} ${t("share.shareText.suffix")} ${url}`;
     const ok = await shareCardImage(canvas, text);
     if (ok) {
       track.shareNativeUsed(type);
@@ -70,13 +73,6 @@ export default function ShareButtons({
     }
   };
 
-  const feedbackLabel: Record<FeedbackState, string> = {
-    idle: "",
-    saved: "저장됨!",
-    shared: "공유됨!",
-    copied: "복사됨!",
-  };
-
   return (
     <div className="space-y-2">
       <div className="flex gap-2">
@@ -88,7 +84,7 @@ export default function ShareButtons({
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
           </svg>
-          {feedback === "saved" ? "저장됨!" : "이미지 저장"}
+          {feedback === "saved" ? t("share.saved") : t("share.save")}
         </button>
 
         {/* Share (Web Share API) */}
@@ -100,7 +96,7 @@ export default function ShareButtons({
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.935-2.186 2.25 2.25 0 0 0-3.935 2.186Z" />
           </svg>
-          {feedback === "shared" ? "공유됨!" : "공유하기"}
+          {feedback === "shared" ? t("share.shared") : t("share.share")}
         </button>
       </div>
 
@@ -112,7 +108,7 @@ export default function ShareButtons({
         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m9.363-3.068a4.5 4.5 0 0 0-1.242-7.244l-4.5-4.5a4.5 4.5 0 0 0-6.364 6.364l1.757 1.757" />
         </svg>
-        {feedback === "copied" ? "링크 복사됨!" : "링크 복사"}
+        {feedback === "copied" ? t("share.copied") : t("share.copyLink")}
       </button>
     </div>
   );

@@ -2,6 +2,7 @@
 
 import { useRef, useState, useCallback, useEffect } from "react";
 import { compressImage } from "@/lib/gwansang/utils";
+import { useI18n } from "@/lib/i18n/context";
 
 interface FaceCaptureProps {
   onCapture: (base64: string, previewUrl: string) => void;
@@ -15,6 +16,7 @@ function isMobileDevice(): boolean {
 }
 
 export default function FaceCapture({ onCapture, disabled }: FaceCaptureProps) {
+  const { t } = useI18n();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -62,7 +64,7 @@ export default function FaceCapture({ onCapture, disabled }: FaceCaptureProps) {
       setStream(mediaStream);
       setMode("camera");
     } catch {
-      setError("카메라에 접근할 수 없습니다. 카메라 권한을 확인해주세요.");
+      setError(t("capture.error.noCamera"));
     }
   };
 
@@ -104,7 +106,7 @@ export default function FaceCapture({ onCapture, disabled }: FaceCaptureProps) {
     setError(null);
 
     if (!file.type.startsWith("image/")) {
-      setError("이미지 파일만 업로드 가능합니다.");
+      setError(t("capture.error.notImage"));
       return;
     }
 
@@ -115,7 +117,7 @@ export default function FaceCapture({ onCapture, disabled }: FaceCaptureProps) {
       setMode("preview");
       onCapture(base64, dataUrl);
     } catch {
-      setError("이미지를 처리할 수 없습니다. 다른 이미지를 시도해주세요.");
+      setError(t("capture.error.processFailed"));
     }
   };
 
@@ -160,8 +162,8 @@ export default function FaceCapture({ onCapture, disabled }: FaceCaptureProps) {
                 <path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2" />
               </svg>
             </div>
-            <p className="text-[var(--color-text-secondary)] text-center text-sm">
-              정면을 바라보는 얼굴 사진을<br />촬영하거나 업로드해주세요
+            <p className="text-[var(--color-text-secondary)] text-center text-sm whitespace-pre-line">
+              {t("capture.instruction")}
             </p>
           </div>
 
@@ -175,7 +177,7 @@ export default function FaceCapture({ onCapture, disabled }: FaceCaptureProps) {
                 <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
                 <circle cx="12" cy="13" r="4" />
               </svg>
-              카메라 촬영
+              {t("capture.camera")}
             </button>
             <button
               onClick={() => fileInputRef.current?.click()}
@@ -187,12 +189,12 @@ export default function FaceCapture({ onCapture, disabled }: FaceCaptureProps) {
                 <polyline points="17 8 12 3 7 8" />
                 <line x1="12" y1="3" x2="12" y2="15" />
               </svg>
-              사진 업로드
+              {t("capture.upload")}
             </button>
           </div>
 
           <p className="text-center text-xs text-[var(--color-text-secondary)] opacity-60 mt-2">
-            촬영된 사진은 분석 후 저장되지 않습니다.
+            {t("capture.privacy")}
           </p>
         </div>
       )}
@@ -219,13 +221,13 @@ export default function FaceCapture({ onCapture, disabled }: FaceCaptureProps) {
               onClick={reset}
               className="py-3.5 px-4 rounded-xl border border-[var(--color-border)] text-[var(--color-text-secondary)] font-semibold text-sm hover:border-[var(--color-red)] hover:text-[var(--color-red-light)] transition"
             >
-              취소
+              {t("capture.cancel")}
             </button>
             <button
               onClick={capturePhoto}
               className="py-3.5 px-4 rounded-xl bg-[var(--color-gold)] text-[var(--color-bg)] font-semibold text-sm hover:brightness-110 transition"
             >
-              촬영하기
+              {t("capture.shoot")}
             </button>
           </div>
         </div>
@@ -238,7 +240,7 @@ export default function FaceCapture({ onCapture, disabled }: FaceCaptureProps) {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={previewUrl}
-              alt="촬영된 얼굴"
+              alt={t("capture.previewAlt")}
               className="w-full h-full object-cover"
             />
             <div className="absolute bottom-3 right-3">
@@ -247,7 +249,7 @@ export default function FaceCapture({ onCapture, disabled }: FaceCaptureProps) {
                 disabled={disabled}
                 className="py-2 px-4 rounded-lg bg-black/60 backdrop-blur-sm text-white text-xs font-medium hover:bg-black/80 transition disabled:opacity-50"
               >
-                다시 촬영
+                {t("capture.retake")}
               </button>
             </div>
           </div>

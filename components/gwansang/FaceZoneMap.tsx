@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import type { GwansangReading } from "@/lib/gwansang/types";
+import { useI18n } from "@/lib/i18n/context";
+import type { TranslationKey } from "@/lib/i18n/translations";
 
 interface FaceZoneMapProps {
   imageUrl: string;
@@ -10,96 +12,102 @@ interface FaceZoneMapProps {
 
 interface Zone {
   id: string;
-  label: string;
+  labelKey: TranslationKey;
   hanja: string;
   /** SVG circle position (% of image) */
   cx: number;
   cy: number;
   /** Which feature key this maps to */
   featureKey?: keyof GwansangReading["features"];
-  /** Which 12궁 or category this represents */
-  role: string;
+  /** Which role description key */
+  roleKey: TranslationKey;
   /** Which fortune it connects to */
   fortuneKey?: keyof GwansangReading["fortunes"];
 }
 
+interface GridLine {
+  y: number;
+  labelKey: TranslationKey;
+  descKey: TranslationKey;
+}
+
 /** Grid lines for 삼정 (Three Courts) */
-const GRID_LINES: { y: number; label: string; desc: string }[] = [
-  { y: 15, label: "상정(上停)", desc: "초년운 · 지성 · 부모운" },
-  { y: 43, label: "중정(中停)", desc: "중년운 · 의지 · 사회운" },
-  { y: 70, label: "하정(下停)", desc: "말년운 · 실행 · 부하운" },
+const GRID_LINES: GridLine[] = [
+  { y: 15, labelKey: "gwansang.faceZone.grid.upper", descKey: "gwansang.faceZone.grid.upper.desc" },
+  { y: 43, labelKey: "gwansang.faceZone.grid.middle", descKey: "gwansang.faceZone.grid.middle.desc" },
+  { y: 70, labelKey: "gwansang.faceZone.grid.lower", descKey: "gwansang.faceZone.grid.lower.desc" },
 ];
 
 /** Zone definitions mapped to face positions */
 const ZONES: Zone[] = [
   {
     id: "forehead",
-    label: "이마",
+    labelKey: "gwansang.faceZone.forehead",
     hanja: "天庭",
     cx: 50,
     cy: 22,
     featureKey: "forehead",
-    role: "관록궁 · 복덕궁 — 초년운, 지적 능력, 사회적 지위",
+    roleKey: "gwansang.faceZone.role.forehead",
     fortuneKey: "career",
   },
   {
     id: "eyebrow-l",
-    label: "눈썹",
+    labelKey: "gwansang.faceZone.eyebrows",
     hanja: "保壽",
     cx: 35,
     cy: 35,
     featureKey: "eyebrows",
-    role: "형제궁 · 보수관 — 형제운, 감정 표현, 수명",
+    roleKey: "gwansang.faceZone.role.eyebrows",
     fortuneKey: "relationships",
   },
   {
     id: "eyes",
-    label: "눈",
+    labelKey: "gwansang.faceZone.eyes",
     hanja: "監察",
     cx: 50,
     cy: 42,
     featureKey: "eyes",
-    role: "명궁 · 감찰관 — 선천 운명, 내면, 의지력",
+    roleKey: "gwansang.faceZone.role.eyes",
     fortuneKey: "love",
   },
   {
     id: "nose",
-    label: "코",
+    labelKey: "gwansang.faceZone.nose",
     hanja: "審判",
     cx: 50,
     cy: 55,
     featureKey: "nose",
-    role: "재백궁 · 심판관 — 재물운, 자존감, 40대 운세",
+    roleKey: "gwansang.faceZone.role.nose",
     fortuneKey: "wealth",
   },
   {
     id: "mouth",
-    label: "입",
+    labelKey: "gwansang.faceZone.mouth",
     hanja: "出納",
     cx: 50,
     cy: 68,
     featureKey: "mouth",
-    role: "출납관 — 언어 능력, 식복, 대인관계",
+    roleKey: "gwansang.faceZone.role.mouth",
     fortuneKey: "relationships",
   },
   {
     id: "ears",
-    label: "귀",
+    labelKey: "gwansang.faceZone.ears",
     hanja: "採聽",
     cx: 82,
     cy: 42,
     featureKey: "ears",
-    role: "채청관 — 수명, 지혜, 어린 시절 환경",
+    roleKey: "gwansang.faceZone.role.ears",
     fortuneKey: "health",
   },
   {
     id: "chin",
-    label: "턱",
+    labelKey: "gwansang.faceZone.chin",
     hanja: "地閣",
     cx: 50,
     cy: 82,
     featureKey: "chin",
-    role: "노복궁 · 지각 — 말년운, 부하운, 부동산운",
+    roleKey: "gwansang.faceZone.role.chin",
     fortuneKey: "wealth",
   },
 ];
@@ -115,6 +123,7 @@ const CONNECTIONS: [string, string][] = [
 ];
 
 export default function FaceZoneMap({ imageUrl, reading }: FaceZoneMapProps) {
+  const { t } = useI18n();
   const [activeZone, setActiveZone] = useState<string | null>(null);
 
   const active = activeZone
@@ -141,7 +150,7 @@ export default function FaceZoneMap({ imageUrl, reading }: FaceZoneMapProps) {
         {/* Base image */}
         <img
           src={imageUrl}
-          alt="분석 대상 얼굴"
+          alt={t("gwansang.faceZone.alt")}
           className="w-full aspect-square object-cover"
           style={{ filter: "brightness(0.85) contrast(1.1)" }}
         />
@@ -165,7 +174,7 @@ export default function FaceZoneMap({ imageUrl, reading }: FaceZoneMapProps) {
 
           {/* 삼정 horizontal division lines */}
           {GRID_LINES.map((line) => (
-            <g key={line.label}>
+            <g key={line.labelKey}>
               <line
                 x1="12"
                 y1={line.y}
@@ -184,7 +193,7 @@ export default function FaceZoneMap({ imageUrl, reading }: FaceZoneMapProps) {
                 textAnchor="end"
                 dominantBaseline="middle"
               >
-                {line.label}
+                {t(line.labelKey)}
               </text>
             </g>
           ))}
@@ -278,7 +287,7 @@ export default function FaceZoneMap({ imageUrl, reading }: FaceZoneMapProps) {
                   textAnchor="middle"
                   style={{ pointerEvents: "none" }}
                 >
-                  {zone.label}
+                  {t(zone.labelKey)}
                 </text>
 
                 {/* Hanja subtitle */}
@@ -301,7 +310,7 @@ export default function FaceZoneMap({ imageUrl, reading }: FaceZoneMapProps) {
         {!activeZone && (
           <div className="absolute bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/60 backdrop-blur-sm">
             <p className="text-[10px] text-[var(--color-gold-dim)] whitespace-nowrap">
-              구역을 탭하여 분석 근거를 확인하세요
+              {t("gwansang.faceZone.tapHint")}
             </p>
           </div>
         )}
@@ -315,21 +324,21 @@ export default function FaceZoneMap({ imageUrl, reading }: FaceZoneMapProps) {
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[var(--color-gold)]" />
               <h4 className="font-[family-name:var(--font-serif)] text-sm font-bold text-[var(--color-gold)]">
-                {active.label} ({active.hanja})
+                {t(active.labelKey)} ({active.hanja})
               </h4>
             </div>
             <button
               onClick={() => setActiveZone(null)}
               className="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-ivory)] transition"
             >
-              닫기 ✕
+              {t("gwansang.faceZone.close")} ✕
             </button>
           </div>
 
           {/* Role */}
           <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
-            <span className="text-[var(--color-gold-dim)] font-semibold">관상학 위치:</span>{" "}
-            {active.role}
+            <span className="text-[var(--color-gold-dim)] font-semibold">{t("gwansang.faceZone.position")}</span>{" "}
+            {t(active.roleKey)}
           </p>
 
           {/* Feature analysis */}
@@ -337,7 +346,7 @@ export default function FaceZoneMap({ imageUrl, reading }: FaceZoneMapProps) {
             <div className="bg-[var(--color-bg-base)] rounded-lg p-3 space-y-1.5">
               <div className="flex items-center justify-between">
                 <p className="text-xs font-semibold text-[var(--color-ivory)]">
-                  감지: {activeFeature.type}
+                  {t("gwansang.faceZone.detected")} {activeFeature.type}
                 </p>
                 <div className="flex gap-0.5">
                   {Array.from({ length: 5 }, (_, i) => (
@@ -363,7 +372,7 @@ export default function FaceZoneMap({ imageUrl, reading }: FaceZoneMapProps) {
           {/* Connected fortune */}
           {activeFortune && (
             <div className="flex items-center gap-2 text-xs">
-              <span className="text-[var(--color-gold-dim)]">→ 연관 운세:</span>
+              <span className="text-[var(--color-gold-dim)]">{t("gwansang.faceZone.relatedFortune")}</span>
               <span
                 className="font-bold font-mono"
                 style={{
@@ -375,7 +384,7 @@ export default function FaceZoneMap({ imageUrl, reading }: FaceZoneMapProps) {
                         : "var(--color-red)",
                 }}
               >
-                {activeFortune.score}점
+                {activeFortune.score}{t("gwansang.faceZone.unit")}
               </span>
               <span className="text-[var(--color-text-muted)]">
                 {activeFortune.summary}
@@ -389,15 +398,15 @@ export default function FaceZoneMap({ imageUrl, reading }: FaceZoneMapProps) {
       <div className="flex items-center justify-center gap-4 text-[10px] text-[var(--color-text-muted)]">
         <span className="flex items-center gap-1">
           <span className="inline-block w-4 h-px bg-[var(--color-gold-dim)] opacity-50" style={{ borderTop: "1px dashed var(--color-gold-dim)" }} />
-          삼정 구분선
+          {t("gwansang.faceZone.legend.grid")}
         </span>
         <span className="flex items-center gap-1">
           <span className="inline-block w-1.5 h-1.5 rounded-full bg-[var(--color-gold-dim)] opacity-60" />
-          분석 구역
+          {t("gwansang.faceZone.legend.zone")}
         </span>
         <span className="flex items-center gap-1">
           <span className="inline-block w-3 h-px bg-[var(--color-gold-dim)] opacity-30" />
-          연결선
+          {t("gwansang.faceZone.legend.line")}
         </span>
       </div>
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useI18n } from "@/lib/i18n/context";
 
 export default function GwansangError({
   error,
@@ -9,6 +10,8 @@ export default function GwansangError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const { t } = useI18n();
+
   useEffect(() => {
     console.error("[gwansang] Client error:", error);
   }, [error]);
@@ -17,7 +20,7 @@ export default function GwansangError({
     <div className="min-h-screen flex items-center justify-center p-8">
       <div className="max-w-md w-full text-center space-y-6">
         <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
-          페이지 로드 중 오류가 발생했습니다
+          {t("error.pageLoad")}
         </h2>
         <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-left">
           <p className="text-sm font-mono text-red-800 break-all">
@@ -31,7 +34,7 @@ export default function GwansangError({
           onClick={reset}
           className="px-6 py-3 bg-[var(--color-mystic-purple)] text-white rounded-xl font-semibold hover:brightness-110 transition"
         >
-          다시 시도
+          {t("error.retry")}
         </button>
       </div>
     </div>

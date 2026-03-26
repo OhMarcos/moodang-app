@@ -9,6 +9,8 @@ import FaceDiagram from "./FaceDiagram";
 import FaceZoneMap from "./FaceZoneMap";
 import ShareButtons from "@/components/ShareButtons";
 import { getScoreColor } from "@/lib/gwansang/utils";
+import { useI18n } from "@/lib/i18n/context";
+import type { TranslationKey } from "@/lib/i18n/translations";
 
 interface ReadingResultProps {
   reading: GwansangReading;
@@ -18,29 +20,29 @@ interface ReadingResultProps {
 }
 
 const VIRAL_SCORE_CONFIG = [
-  { key: "sexAppeal" as const, label: "색기", emoji: "🔥", desc: "이성을 끌어당기는 매력" },
-  { key: "sharpMind" as const, label: "총기", emoji: "🧠", desc: "지적 능력과 판단력" },
-  { key: "wealthPotential" as const, label: "재력", emoji: "💰", desc: "재물을 모으는 능력" },
-  { key: "peopleLuck" as const, label: "인복", emoji: "🤝", desc: "좋은 사람이 모이는 힘" },
-  { key: "mainCharacterEnergy" as const, label: "관종력", emoji: "⭐", desc: "존재감과 주목도" },
+  { key: "sexAppeal" as const, labelKey: "gwansang.result.stats.sexAppeal" as TranslationKey, emoji: "🔥", descKey: "gwansang.result.stats.sexAppeal.desc" as TranslationKey },
+  { key: "sharpMind" as const, labelKey: "gwansang.result.stats.sharpMind" as TranslationKey, emoji: "🧠", descKey: "gwansang.result.stats.sharpMind.desc" as TranslationKey },
+  { key: "wealthPotential" as const, labelKey: "gwansang.result.stats.wealthPotential" as TranslationKey, emoji: "💰", descKey: "gwansang.result.stats.wealthPotential.desc" as TranslationKey },
+  { key: "peopleLuck" as const, labelKey: "gwansang.result.stats.peopleLuck" as TranslationKey, emoji: "🤝", descKey: "gwansang.result.stats.peopleLuck.desc" as TranslationKey },
+  { key: "mainCharacterEnergy" as const, labelKey: "gwansang.result.stats.mainCharacterEnergy" as TranslationKey, emoji: "⭐", descKey: "gwansang.result.stats.mainCharacterEnergy.desc" as TranslationKey },
 ];
 
 const FORTUNE_CONFIG = [
-  { key: "wealth" as const, title: "재물운", icon: "💰" },
-  { key: "love" as const, title: "애정운", icon: "💕" },
-  { key: "career" as const, title: "직업운", icon: "💼" },
-  { key: "health" as const, title: "건강운", icon: "🏥" },
-  { key: "relationships" as const, title: "대인관계", icon: "🤝" },
+  { key: "wealth" as const, titleKey: "gwansang.result.fortune.wealth" as TranslationKey, icon: "💰" },
+  { key: "love" as const, titleKey: "gwansang.result.fortune.love" as TranslationKey, icon: "💕" },
+  { key: "career" as const, titleKey: "gwansang.result.fortune.career" as TranslationKey, icon: "💼" },
+  { key: "health" as const, titleKey: "gwansang.result.fortune.health" as TranslationKey, icon: "🏥" },
+  { key: "relationships" as const, titleKey: "gwansang.result.fortune.relationships" as TranslationKey, icon: "🤝" },
 ];
 
 const FEATURE_CONFIG = [
-  { key: "forehead" as const, label: "이마", icon: "🔮" },
-  { key: "eyebrows" as const, label: "눈썹", icon: "🌙" },
-  { key: "eyes" as const, label: "눈", icon: "👁" },
-  { key: "nose" as const, label: "코", icon: "👃" },
-  { key: "mouth" as const, label: "입", icon: "👄" },
-  { key: "ears" as const, label: "귀", icon: "👂" },
-  { key: "chin" as const, label: "턱", icon: "🗿" },
+  { key: "forehead" as const, labelKey: "gwansang.result.features.forehead" as TranslationKey, icon: "🔮" },
+  { key: "eyebrows" as const, labelKey: "gwansang.result.features.eyebrows" as TranslationKey, icon: "🌙" },
+  { key: "eyes" as const, labelKey: "gwansang.result.features.eyes" as TranslationKey, icon: "👁" },
+  { key: "nose" as const, labelKey: "gwansang.result.features.nose" as TranslationKey, icon: "👃" },
+  { key: "mouth" as const, labelKey: "gwansang.result.features.mouth" as TranslationKey, icon: "👄" },
+  { key: "ears" as const, labelKey: "gwansang.result.features.ears" as TranslationKey, icon: "👂" },
+  { key: "chin" as const, labelKey: "gwansang.result.features.chin" as TranslationKey, icon: "🗿" },
 ];
 
 export default function ReadingResult({
@@ -49,6 +51,7 @@ export default function ReadingResult({
   onReset,
   readingId,
 }: ReadingResultProps) {
+  const { t } = useI18n();
   const cardRef = useRef<CardHandle>(null);
 
   const canvasRef = {
@@ -62,7 +65,7 @@ export default function ReadingResult({
       {/* 1. Card Image (hero — screenshot-worthy) */}
       <div className="animate-fade-in-up">
         <h2 className="font-[family-name:var(--font-serif)] text-xl font-bold text-[var(--color-gold)] mb-4 text-center">
-          관상 분석 결과
+          {t("gwansang.result.title")}
         </h2>
         <FaceAnalysisOverlay ref={cardRef} imageUrl={imageUrl} reading={reading} />
       </div>
@@ -81,10 +84,10 @@ export default function ReadingResult({
       {/* 2.5. Interactive Face Zone Map */}
       <div className="animate-fade-in-up" style={{ animationDelay: "120ms" }}>
         <h3 className="font-[family-name:var(--font-serif)] text-base font-bold text-[var(--color-ivory)] mb-3 text-center flex items-center justify-center gap-2">
-          <span>🔍</span> 얼굴 구역별 분석 근거
+          <span>🔍</span> {t("gwansang.result.faceZone.title")}
         </h3>
         <p className="text-xs text-[var(--color-text-muted)] mb-3 text-center">
-          각 구역이 관상학에서 어떤 역할을 하는지 확인하세요
+          {t("gwansang.result.faceZone.desc")}
         </p>
         <FaceZoneMap imageUrl={imageUrl} reading={reading} />
       </div>
@@ -96,7 +99,7 @@ export default function ReadingResult({
           style={{ animationDelay: "150ms" }}
         >
           <h3 className="font-[family-name:var(--font-serif)] text-base font-bold text-[var(--color-gold)] mb-4 text-center">
-            능력치 분석
+            {t("gwansang.result.stats.title")}
           </h3>
           <div className="space-y-4">
             {VIRAL_SCORE_CONFIG.map((cfg) => {
@@ -105,7 +108,7 @@ export default function ReadingResult({
                 <div key={cfg.key}>
                   <div className="flex items-center justify-between mb-1.5">
                     <span className="text-sm text-[var(--color-ivory)] flex items-center gap-1.5">
-                      <span>{cfg.emoji}</span> {cfg.label}
+                      <span>{cfg.emoji}</span> {t(cfg.labelKey)}
                     </span>
                     <span
                       className="text-sm font-bold font-mono"
@@ -128,7 +131,7 @@ export default function ReadingResult({
                       }}
                     />
                   </div>
-                  <p className="text-xs text-[var(--color-text-muted)] mt-0.5">{cfg.desc}</p>
+                  <p className="text-xs text-[var(--color-text-muted)] mt-0.5">{t(cfg.descKey)}</p>
                 </div>
               );
             })}
@@ -144,7 +147,7 @@ export default function ReadingResult({
         >
           <div className="rounded-xl border border-[var(--color-red-dark,#7f1d1d)] bg-gradient-to-b from-[rgba(139,26,26,0.12)] to-[var(--color-bg-card)] p-5">
             <h3 className="font-[family-name:var(--font-serif)] text-base font-bold text-[var(--color-red-light)] mb-4 flex items-center gap-2">
-              <span>⚠️</span> 불편한 진실
+              <span>⚠️</span> {t("gwansang.result.harshTruths")}
             </h3>
             <div className="space-y-3">
               {reading.harshTruths.truths.map((truth, i) => (
@@ -158,7 +161,7 @@ export default function ReadingResult({
             </div>
           </div>
           <div className="rounded-xl border border-[var(--color-red)] bg-[rgba(139,26,26,0.2)] p-4 text-center">
-            <p className="text-xs text-[var(--color-red-light)] mb-1 tracking-widest font-semibold">경고</p>
+            <p className="text-xs text-[var(--color-red-light)] mb-1 tracking-widest font-semibold">{t("gwansang.result.warning")}</p>
             <p className="text-sm text-[var(--color-ivory)] leading-relaxed font-medium">
               {reading.harshTruths.warning}
             </p>
@@ -171,7 +174,7 @@ export default function ReadingResult({
         <div className="animate-fade-in-up space-y-3" style={{ animationDelay: "250ms" }}>
           {/* Nickname Banner */}
           <div className="border-traditional rounded-xl bg-gradient-to-r from-[var(--color-red-dark,#7f1d1d)] to-[var(--color-bg-card)] p-5 text-center">
-            <p className="text-xs text-[var(--color-gold-dim)] mb-1 tracking-widest">당신의 관상 별명</p>
+            <p className="text-xs text-[var(--color-gold-dim)] mb-1 tracking-widest">{t("gwansang.result.nickname.label")}</p>
             <p className="font-[family-name:var(--font-serif)] text-lg font-bold text-[var(--color-gold)]">
               &ldquo;{reading.funTags.nickname}&rdquo;
             </p>
@@ -181,13 +184,13 @@ export default function ReadingResult({
           <div className="border-traditional rounded-xl bg-[var(--color-bg-card)] p-5">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-[family-name:var(--font-serif)] text-base font-bold text-[var(--color-gold)] flex items-center gap-2">
-                <span>🔥</span> 매력/색기 지수
+                <span>🔥</span> {t("gwansang.result.charm.title")}
               </h3>
               <span
                 className="text-xl font-bold"
                 style={{ color: getScoreColor(reading.funTags.charmScore) }}
               >
-                {reading.funTags.charmScore}점
+                {reading.funTags.charmScore}{t("gwansang.result.charm.unit")}
               </span>
             </div>
             <p className="text-sm text-[var(--color-ivory)] leading-relaxed">
@@ -199,7 +202,7 @@ export default function ReadingResult({
           <div className="grid grid-cols-2 gap-3">
             <div className="border-traditional rounded-xl bg-[var(--color-bg-card)] p-4">
               <p className="text-xs text-[var(--color-gold-dim)] mb-1.5 flex items-center gap-1">
-                <span>💎</span> 숨은 매력
+                <span>💎</span> {t("gwansang.result.hiddenCharm")}
               </p>
               <p className="text-sm text-[var(--color-ivory)] leading-relaxed">
                 {reading.funTags.hiddenCharm}
@@ -207,7 +210,7 @@ export default function ReadingResult({
             </div>
             <div className="border-traditional rounded-xl bg-[var(--color-bg-card)] p-4">
               <p className="text-xs text-[var(--color-gold-dim)] mb-1.5 flex items-center gap-1">
-                <span>⚡</span> 숨은 재능
+                <span>⚡</span> {t("gwansang.result.hiddenTalent")}
               </p>
               <p className="text-sm text-[var(--color-ivory)] leading-relaxed">
                 {reading.funTags.hiddenTalent}
@@ -218,7 +221,7 @@ export default function ReadingResult({
           {/* Romantic Fortune */}
           <div className="border-traditional rounded-xl bg-[var(--color-bg-card)] p-5">
             <h3 className="font-[family-name:var(--font-serif)] text-base font-bold text-[var(--color-gold)] mb-2 flex items-center gap-2">
-              <span>💘</span> 이성 복/배우자 복
+              <span>💘</span> {t("gwansang.result.romanticFortune")}
             </h3>
             <p className="text-sm text-[var(--color-ivory)] leading-relaxed">
               {reading.funTags.romanticFortune}
@@ -227,7 +230,7 @@ export default function ReadingResult({
 
           {/* Past Life */}
           <div className="border-traditional rounded-xl bg-gradient-to-r from-[var(--color-bg-card)] to-[rgba(201,168,76,0.08)] p-5 text-center">
-            <p className="text-xs text-[var(--color-gold-dim)] mb-1 tracking-widest">조선시대 전생 직업</p>
+            <p className="text-xs text-[var(--color-gold-dim)] mb-1 tracking-widest">{t("gwansang.result.pastLife")}</p>
             <p className="font-[family-name:var(--font-serif)] text-base font-bold text-[var(--color-ivory)] mt-1">
               {reading.funTags.pastLifeJob}
             </p>
@@ -241,7 +244,7 @@ export default function ReadingResult({
           className="font-[family-name:var(--font-serif)] text-base font-bold text-[var(--color-ivory)] mb-3 flex items-center gap-2 animate-fade-in-up"
           style={{ animationDelay: "300ms" }}
         >
-          <span>🎯</span> 운세 분석
+          <span>🎯</span> {t("gwansang.result.fortune.title")}
         </h3>
         <div className="space-y-3">
           {FORTUNE_CONFIG.map((cfg, i) => {
@@ -250,7 +253,7 @@ export default function ReadingResult({
             return (
               <ReadingCard
                 key={cfg.key}
-                title={cfg.title}
+                title={t(cfg.titleKey)}
                 icon={cfg.icon}
                 fortune={fortune}
                 delay={400 + i * 100}
@@ -263,7 +266,7 @@ export default function ReadingResult({
       {/* 7. Feature Analysis */}
       <div className="animate-fade-in-up" style={{ animationDelay: "900ms" }}>
         <h3 className="font-[family-name:var(--font-serif)] text-base font-bold text-[var(--color-ivory)] mb-3 flex items-center gap-2">
-          <span>🏛</span> 이목구비 분석
+          <span>🏛</span> {t("gwansang.result.features.title")}
         </h3>
         <div className="grid grid-cols-2 gap-2.5">
           {FEATURE_CONFIG.map((cfg) => {
@@ -272,7 +275,7 @@ export default function ReadingResult({
             return (
               <FeatureCard
                 key={cfg.key}
-                label={cfg.label}
+                label={t(cfg.labelKey)}
                 icon={cfg.icon}
                 feature={feature}
               />
@@ -284,10 +287,10 @@ export default function ReadingResult({
       {/* 7.5. Face Diagram (12궁/삼정/오관) */}
       <div className="animate-fade-in-up" style={{ animationDelay: "950ms" }}>
         <h3 className="font-[family-name:var(--font-serif)] text-base font-bold text-[var(--color-ivory)] mb-3 flex items-center gap-2">
-          <span>🗺</span> 관상학 얼굴 분석도
+          <span>🗺</span> {t("gwansang.result.faceDiagram.title")}
         </h3>
         <p className="text-xs text-[var(--color-text-muted)] mb-3 text-center">
-          12궁 · 삼정 · 오관 관상학 매핑
+          {t("gwansang.result.faceDiagram.desc")}
         </p>
         <FaceDiagram imageUrl={imageUrl} reading={reading} />
       </div>
@@ -298,19 +301,19 @@ export default function ReadingResult({
         style={{ animationDelay: "1000ms" }}
       >
         <h3 className="font-[family-name:var(--font-serif)] text-base font-bold text-[var(--color-gold)] mb-3 flex items-center gap-2">
-          <span>🍀</span> 행운의 요소
+          <span>🍀</span> {t("gwansang.result.luckyElements.title")}
         </h3>
         <div className="grid grid-cols-3 gap-3">
           <div className="text-center">
-            <p className="text-xs text-[var(--color-text-secondary)] mb-1">행운의 색</p>
+            <p className="text-xs text-[var(--color-text-secondary)] mb-1">{t("gwansang.result.luckyElements.color")}</p>
             <p className="text-sm font-semibold text-[var(--color-ivory)]">{reading.luckyElements?.color ?? "-"}</p>
           </div>
           <div className="text-center">
-            <p className="text-xs text-[var(--color-text-secondary)] mb-1">행운의 숫자</p>
+            <p className="text-xs text-[var(--color-text-secondary)] mb-1">{t("gwansang.result.luckyElements.number")}</p>
             <p className="text-sm font-semibold text-[var(--color-ivory)]">{reading.luckyElements?.number ?? "-"}</p>
           </div>
           <div className="text-center">
-            <p className="text-xs text-[var(--color-text-secondary)] mb-1">행운의 방향</p>
+            <p className="text-xs text-[var(--color-text-secondary)] mb-1">{t("gwansang.result.luckyElements.direction")}</p>
             <p className="text-sm font-semibold text-[var(--color-ivory)]">{reading.luckyElements?.direction ?? "-"}</p>
           </div>
         </div>
@@ -322,7 +325,7 @@ export default function ReadingResult({
         style={{ animationDelay: "1100ms" }}
       >
         <h3 className="font-[family-name:var(--font-serif)] text-base font-bold text-[var(--color-gold)] mb-3 flex items-center gap-2">
-          <span>📜</span> 종합 인상 & 인생 조언
+          <span>📜</span> {t("gwansang.result.overall.title")}
         </h3>
         <p className="text-sm text-[var(--color-ivory)] leading-relaxed mb-3">
           {reading.overallImpression}
@@ -339,15 +342,13 @@ export default function ReadingResult({
           onClick={onReset}
           className="w-full py-3.5 px-4 rounded-xl border border-[var(--color-border)] text-[var(--color-text)] font-semibold text-sm hover:border-[var(--color-gold-dim)] transition"
         >
-          다시 분석하기
+          {t("gwansang.result.resetButton")}
         </button>
       </div>
 
       {/* Disclaimer */}
-      <p className="text-center text-xs text-[var(--color-text-secondary)] opacity-60 pt-4">
-        본 서비스는 전통 관상학을 기반으로 한 재미용 콘텐츠입니다.
-        <br />
-        실제 운명이나 미래를 예측하지 않습니다.
+      <p className="text-center text-xs text-[var(--color-text-secondary)] opacity-60 pt-4 whitespace-pre-line">
+        {t("gwansang.result.disclaimer")}
       </p>
     </div>
   );

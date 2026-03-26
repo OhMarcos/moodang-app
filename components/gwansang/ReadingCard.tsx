@@ -2,6 +2,7 @@
 
 import type { FortuneReading } from "@/lib/gwansang/types";
 import { getScoreColor } from "@/lib/gwansang/utils";
+import { useI18n } from "@/lib/i18n/context";
 
 interface ReadingCardProps {
   title: string;
@@ -16,6 +17,8 @@ export default function ReadingCard({
   fortune,
   delay = 0,
 }: ReadingCardProps) {
+  const { t } = useI18n();
+
   return (
     <div
       className="border-traditional rounded-xl bg-[var(--color-bg-card)] p-5 animate-fade-in-up"
@@ -63,7 +66,7 @@ export default function ReadingCard({
       {/* Advice */}
       <div className="bg-[var(--color-bg)] rounded-lg p-3 border border-[var(--color-border)]">
         <p className="text-xs text-[var(--color-gold-dim)] font-semibold mb-1">
-          조언
+          {t("common.advice")}
         </p>
         <p className="text-sm text-[var(--color-ivory-dim)] leading-relaxed">
           {fortune.advice}

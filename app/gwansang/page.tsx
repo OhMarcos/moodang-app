@@ -7,8 +7,10 @@ import AnalysisProgress from "@/components/gwansang/AnalysisProgress";
 import ReadingResult from "@/components/gwansang/ReadingResult";
 import { track } from "@/lib/analytics";
 import { getSessionId } from "@/lib/session";
+import { useI18n } from "@/lib/i18n/context";
 
 export default function GwansangPage() {
+  const { t, locale } = useI18n();
   const [state, setState] = useState<AnalysisState>({
     status: "idle",
     imageData: null,
@@ -69,7 +71,7 @@ export default function GwansangPage() {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        let errorMsg = "분석에 실패했습니다.";
+        let errorMsg = t("gwansang.error.analysisFailed");
         try {
           const data = await response.json();
           errorMsg = data.error ?? errorMsg;
@@ -94,9 +96,9 @@ export default function GwansangPage() {
       }));
     } catch (err) {
       clearTimeout(timeoutId);
-      let errorMsg = "알 수 없는 오류가 발생했습니다.";
+      let errorMsg = t("gwansang.error.unknown");
       if (err instanceof DOMException && err.name === "AbortError") {
-        errorMsg = "분석 시간이 초과되었습니다. 다시 시도해주세요.";
+        errorMsg = t("gwansang.error.timeout");
       } else if (err instanceof Error) {
         errorMsg = err.message;
       }
@@ -124,13 +126,13 @@ export default function GwansangPage() {
     <div className="min-h-screen">
       <header className="text-center pt-12 pb-6 px-4">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--color-sacred-gold)]/10 border border-[var(--color-sacred-gold)]/20 text-xs text-[var(--color-sacred-gold)] mb-4">
-          AI 관상
+          {t("gwansang.badge")}
         </div>
         <h1 className="font-[family-name:var(--font-serif)] text-3xl font-bold text-gold-gradient mb-2">
-          얼굴이 말하는 당신의 운명
+          {t("gwansang.title")}
         </h1>
         <p className="text-sm text-[var(--color-text-secondary)]">
-          전통 관상학의 지혜 &middot; AI의 눈
+          {t("gwansang.subtitle")}
         </p>
       </header>
 
@@ -141,12 +143,10 @@ export default function GwansangPage() {
               <div className="text-center space-y-4 mb-8">
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[var(--color-border)] text-xs text-[var(--color-text-secondary)]">
                   <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-sacred-gold)] animate-pulse" />
-                  12궁 &middot; 삼정 &middot; 오관 분석
+                  {t("gwansang.featureBadge")}
                 </div>
-                <p className="text-sm text-[var(--color-text-muted)] max-w-sm mx-auto leading-relaxed">
-                  수백 년간 전해 내려온 한국 전통 관상학의 지혜를
-                  <br />
-                  AI 기술로 경험해보세요.
+                <p className="text-sm text-[var(--color-text-muted)] max-w-sm mx-auto leading-relaxed whitespace-pre-line">
+                  {t("gwansang.featureDesc")}
                 </p>
               </div>
             )}
@@ -158,20 +158,20 @@ export default function GwansangPage() {
                 onClick={handleAnalyze}
                 className="w-full py-4 rounded-xl bg-[var(--color-sacred-gold)] text-[var(--color-bg-base)] font-bold text-base hover:brightness-110 transition animate-fade-in-up"
               >
-                관상 분석 시작하기
+                {t("gwansang.startAnalysis")}
               </button>
             )}
 
             {state.status === "idle" && (
               <div className="pt-8 pb-4">
                 <h2 className="font-[family-name:var(--font-serif)] text-center text-sm font-bold text-[var(--color-text-muted)] mb-6">
-                  이용 방법
+                  {t("gwansang.howToUse")}
                 </h2>
                 <div className="grid grid-cols-3 gap-4 text-center">
                   {[
-                    { step: "1", title: "사진 촬영", desc: "정면 얼굴 사진을\n촬영하거나 업로드" },
-                    { step: "2", title: "AI 분석", desc: "12궁, 삼정, 오관\n전통 관상학 분석" },
-                    { step: "3", title: "결과 확인", desc: "성격, 운세, 조언\n상세 리포트 제공" },
+                    { step: "1", title: t("gwansang.step1.title"), desc: t("gwansang.step1.desc") },
+                    { step: "2", title: t("gwansang.step2.title"), desc: t("gwansang.step2.desc") },
+                    { step: "3", title: t("gwansang.step3.title"), desc: t("gwansang.step3.desc") },
                   ].map((item) => (
                     <div key={item.step} className="space-y-2">
                       <div className="w-10 h-10 rounded-full border border-[var(--color-sacred-gold)]/30 flex items-center justify-center mx-auto">
@@ -205,7 +205,7 @@ export default function GwansangPage() {
               onClick={handleReset}
               className="py-3 px-6 rounded-xl border border-[var(--color-border)] text-[var(--color-text-primary)] font-semibold text-sm hover:border-[var(--color-sacred-gold)]/50 transition"
             >
-              다시 시도하기
+              {t("gwansang.retry")}
             </button>
           </div>
         )}

@@ -1,27 +1,30 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useI18n } from "@/lib/i18n/context";
+import type { TranslationKey } from "@/lib/i18n/translations";
 
-const ANALYSIS_STEPS = [
-  "사주팔자 정보를 확인하고 있습니다...",
-  "년주(年柱)와 월주(月柱)를 분석하고 있습니다...",
-  "일주(日柱) 일간의 힘을 측정하고 있습니다...",
-  "시주(時柱)의 흐름을 파악하고 있습니다...",
-  "십신(十神)과 용신(用神)을 해석하고 있습니다...",
-  "오행(五行) 균형을 확인하고 있습니다...",
-  "대운(大運) 흐름을 계산하고 있습니다...",
-  "베딕 나크샤트라와 다샤를 분석하고 있습니다...",
-  "주역 괘상을 해석하고 있습니다...",
-  "삼중 렌즈 교차분석을 마무리하고 있습니다...",
+const STEP_KEYS: TranslationKey[] = [
+  "saju.progress.step0",
+  "saju.progress.step1",
+  "saju.progress.step2",
+  "saju.progress.step3",
+  "saju.progress.step4",
+  "saju.progress.step5",
+  "saju.progress.step6",
+  "saju.progress.step7",
+  "saju.progress.step8",
+  "saju.progress.step9",
 ];
 
 export default function SajuAnalysisProgress({ name }: { name: string }) {
+  const { t } = useI18n();
   const [stepIndex, setStepIndex] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setStepIndex((prev) =>
-        prev < ANALYSIS_STEPS.length - 1 ? prev + 1 : prev
+        prev < STEP_KEYS.length - 1 ? prev + 1 : prev
       );
     }, 2500);
 
@@ -58,13 +61,13 @@ export default function SajuAnalysisProgress({ name }: { name: string }) {
       {/* Step text */}
       <div className="text-center space-y-3">
         <h3 className="font-[family-name:var(--font-serif)] text-lg text-[var(--color-mystic-purple)]">
-          {name}님의 운명을 분석하고 있습니다
+          {name}{t("saju.progress.title")}
         </h3>
         <p
           key={stepIndex}
           className="text-sm text-[var(--color-text-secondary)] animate-fade-in-up min-h-[2.5rem]"
         >
-          {ANALYSIS_STEPS[stepIndex]}
+          {t(STEP_KEYS[stepIndex])}
         </p>
       </div>
 
@@ -74,7 +77,7 @@ export default function SajuAnalysisProgress({ name }: { name: string }) {
           <div
             className="h-full bg-[var(--color-mystic-purple)] transition-all duration-[2500ms] ease-linear"
             style={{
-              width: `${((stepIndex + 1) / ANALYSIS_STEPS.length) * 100}%`,
+              width: `${((stepIndex + 1) / STEP_KEYS.length) * 100}%`,
             }}
           />
         </div>

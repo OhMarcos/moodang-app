@@ -1,27 +1,30 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useI18n } from "@/lib/i18n/context";
+import type { TranslationKey } from "@/lib/i18n/translations";
 
-const ANALYSIS_STEPS = [
-  "얼굴의 전체적인 인상을 살펴보고 있습니다...",
-  "이마와 관록궁을 분석하고 있습니다...",
-  "눈썹의 기운을 읽고 있습니다...",
-  "눈(감찰관)의 빛을 살펴보고 있습니다...",
-  "코(심판관)의 형상을 분석하고 있습니다...",
-  "입(출납관)의 복을 읽고 있습니다...",
-  "삼정의 균형을 확인하고 있습니다...",
-  "오악과 오관을 종합하고 있습니다...",
-  "12궁의 운세를 해석하고 있습니다...",
-  "관상 분석을 마무리하고 있습니다...",
+const STEP_KEYS: TranslationKey[] = [
+  "gwansang.progress.step0",
+  "gwansang.progress.step1",
+  "gwansang.progress.step2",
+  "gwansang.progress.step3",
+  "gwansang.progress.step4",
+  "gwansang.progress.step5",
+  "gwansang.progress.step6",
+  "gwansang.progress.step7",
+  "gwansang.progress.step8",
+  "gwansang.progress.step9",
 ];
 
 export default function AnalysisProgress() {
+  const { t } = useI18n();
   const [stepIndex, setStepIndex] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setStepIndex((prev) =>
-        prev < ANALYSIS_STEPS.length - 1 ? prev + 1 : prev
+        prev < STEP_KEYS.length - 1 ? prev + 1 : prev
       );
     }, 2500);
 
@@ -61,13 +64,13 @@ export default function AnalysisProgress() {
         <h3
           className="font-[family-name:var(--font-serif)] text-lg text-[var(--color-gold)]"
         >
-          관상 분석 중
+          {t("gwansang.progress.title")}
         </h3>
         <p
           key={stepIndex}
           className="text-sm text-[var(--color-text-secondary)] animate-fade-in-up min-h-[2.5rem]"
         >
-          {ANALYSIS_STEPS[stepIndex]}
+          {t(STEP_KEYS[stepIndex])}
         </p>
       </div>
 
@@ -77,7 +80,7 @@ export default function AnalysisProgress() {
           <div
             className="h-full bg-[var(--color-gold)] transition-all duration-[2500ms] ease-linear"
             style={{
-              width: `${((stepIndex + 1) / ANALYSIS_STEPS.length) * 100}%`,
+              width: `${((stepIndex + 1) / STEP_KEYS.length) * 100}%`,
             }}
           />
         </div>
