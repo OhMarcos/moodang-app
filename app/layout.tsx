@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import { Suspense } from "react";
 import PostHogProvider from "@/components/PostHogProvider";
+import { I18nProvider } from "@/lib/i18n/context";
+import LanguageToggle from "@/components/LanguageToggle";
+import LayoutFooter from "@/components/LayoutFooter";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -61,17 +64,11 @@ export default function RootLayout({
       <body className="min-h-screen antialiased">
         <Suspense fallback={null}>
           <PostHogProvider>
-            <main className="relative">{children}</main>
-
-            <footer className="text-center py-8 px-4 mt-8 border-t border-[var(--color-border)]">
-              <p className="text-xs text-[var(--color-text-muted)]">
-                본 서비스는 전통 관상학과 사주명리학을 기반으로 한 재미용
-                콘텐츠입니다.
-              </p>
-              <p className="text-xs text-[var(--color-text-muted)] mt-1 opacity-60">
-                MOODANG
-              </p>
-            </footer>
+            <I18nProvider>
+              <LanguageToggle />
+              <main className="relative">{children}</main>
+              <LayoutFooter />
+            </I18nProvider>
           </PostHogProvider>
         </Suspense>
       </body>

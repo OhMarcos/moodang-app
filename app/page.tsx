@@ -1,12 +1,17 @@
+"use client";
+
 import Link from "next/link";
+import { useI18n } from "@/lib/i18n/context";
 
 export default function HomePage() {
+  const { t } = useI18n();
+
   return (
     <div className="min-h-screen">
       {/* Hero */}
       <section className="text-center pt-16 pb-12 px-4">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--color-mystic-purple)]/10 border border-[var(--color-mystic-purple)]/20 text-xs text-[var(--color-mystic-purple-light)] mb-6">
-          AI &times; 전통 동양학
+          {t("home.badge")}
         </div>
 
         <h1 className="font-[family-name:var(--font-serif)] text-4xl sm:text-5xl font-bold mb-4">
@@ -15,10 +20,10 @@ export default function HomePage() {
         </h1>
 
         <p className="text-lg text-[var(--color-text-secondary)] max-w-md mx-auto leading-relaxed mb-2">
-          당신의 얼굴과 사주가 말하는 것
+          {t("home.subtitle")}
         </p>
         <p className="text-sm text-[var(--color-text-muted)] max-w-sm mx-auto">
-          전통 관상학과 사주팔자의 수백 년 지혜를 AI로 경험하세요
+          {t("home.description")}
         </p>
       </section>
 
@@ -35,10 +40,10 @@ export default function HomePage() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <h2 className="text-lg font-bold text-[var(--color-text-primary)]">AI 관상</h2>
+                  <h2 className="text-lg font-bold text-[var(--color-text-primary)]">{t("home.gwansang.title")}</h2>
                 </div>
                 <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
-                  얼굴 사진 한 장으로 12궁, 삼정, 오관 전통 관상학 분석. 성격, 재물운, 애정운, 직업운까지.
+                  {t("home.gwansang.desc")}
                 </p>
               </div>
               <svg className="w-5 h-5 text-[var(--color-text-muted)] group-hover:text-[var(--color-sacred-gold)] transition shrink-0 mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -59,11 +64,11 @@ export default function HomePage() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <h2 className="text-lg font-bold text-[var(--color-text-primary)]">운명교차점</h2>
-                  <span className="text-[10px] text-[var(--color-mystic-purple-light)] bg-[var(--color-mystic-purple)]/10 px-1.5 py-0.5 rounded-full font-medium">3-System</span>
+                  <h2 className="text-lg font-bold text-[var(--color-text-primary)]">{t("home.saju.title")}</h2>
+                  <span className="text-[10px] text-[var(--color-mystic-purple-light)] bg-[var(--color-mystic-purple)]/10 px-1.5 py-0.5 rounded-full font-medium">{t("home.saju.badge")}</span>
                 </div>
                 <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
-                  동서양 3대 운명학 교차분석. 사주·Vedic·주역이 한 목소리로 말하는 연애·재물·직업 에너지 리포트.
+                  {t("home.saju.desc")}
                 </p>
               </div>
               <svg className="w-5 h-5 text-[var(--color-text-muted)] group-hover:text-[var(--color-mystic-purple-light)] transition shrink-0 mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -77,20 +82,20 @@ export default function HomePage() {
       {/* How it works */}
       <section className="max-w-lg mx-auto px-4 mt-16">
         <h2 className="font-[family-name:var(--font-serif)] text-center text-sm font-bold text-[var(--color-text-muted)] mb-8 tracking-wider uppercase">
-          이용 방법
+          {t("home.howItWorks")}
         </h2>
         <div className="grid grid-cols-3 gap-6 text-center">
-          {[
-            { step: "1", title: "선택", desc: "관상 또는\n운명분석 선택" },
-            { step: "2", title: "입력", desc: "사진 촬영 또는\n생년월일시 입력" },
-            { step: "3", title: "결과", desc: "AI 분석 리포트\n확인 & 공유" },
-          ].map((item) => (
+          {([
+            { step: "1", titleKey: "home.step1.title" as const, descKey: "home.step1.desc" as const },
+            { step: "2", titleKey: "home.step2.title" as const, descKey: "home.step2.desc" as const },
+            { step: "3", titleKey: "home.step3.title" as const, descKey: "home.step3.desc" as const },
+          ]).map((item) => (
             <div key={item.step} className="space-y-3">
               <div className="w-10 h-10 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-card)] flex items-center justify-center mx-auto">
                 <span className="text-sm font-bold text-[var(--color-text-secondary)]">{item.step}</span>
               </div>
-              <p className="text-sm font-semibold text-[var(--color-text-primary)]">{item.title}</p>
-              <p className="text-xs text-[var(--color-text-muted)] whitespace-pre-line">{item.desc}</p>
+              <p className="text-sm font-semibold text-[var(--color-text-primary)]">{t(item.titleKey)}</p>
+              <p className="text-xs text-[var(--color-text-muted)] whitespace-pre-line">{t(item.descKey)}</p>
             </div>
           ))}
         </div>
@@ -99,7 +104,7 @@ export default function HomePage() {
       {/* Social proof */}
       <section className="text-center mt-16 mb-8 px-4">
         <p className="text-xs text-[var(--color-text-muted)]">
-          전통 동양학 기반 AI 분석 서비스
+          {t("home.socialProof")}
         </p>
       </section>
     </div>

@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { track } from "@/lib/analytics";
+import { useI18n } from "@/lib/i18n/context";
+import type { TranslationKey } from "@/lib/i18n/translations";
 import SajuAnalysisProgress from "@/components/saju/AnalysisProgress";
 import type {
   SajuInput,
@@ -34,21 +36,13 @@ import { getSessionId } from "@/lib/session";
 
 // ─── Constants ──────────────────────────────────────────
 
-const HOURS = [
-  { value: -1, label: "모름" },
-  { value: 0, label: "자시 (23:00-01:00)" },
-  { value: 2, label: "축시 (01:00-03:00)" },
-  { value: 4, label: "인시 (03:00-05:00)" },
-  { value: 6, label: "묘시 (05:00-07:00)" },
-  { value: 8, label: "진시 (07:00-09:00)" },
-  { value: 10, label: "사시 (09:00-11:00)" },
-  { value: 12, label: "오시 (11:00-13:00)" },
-  { value: 14, label: "미시 (13:00-15:00)" },
-  { value: 16, label: "신시 (15:00-17:00)" },
-  { value: 18, label: "유시 (17:00-19:00)" },
-  { value: 20, label: "술시 (19:00-21:00)" },
-  { value: 22, label: "해시 (21:00-23:00)" },
-];
+const HOUR_VALUES = [-1, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22] as const;
+const HOUR_KEYS: Record<number, TranslationKey> = {
+  [-1]: "saju.hour.unknown",
+  0: "saju.hour.0", 2: "saju.hour.2", 4: "saju.hour.4", 6: "saju.hour.6",
+  8: "saju.hour.8", 10: "saju.hour.10", 12: "saju.hour.12", 14: "saju.hour.14",
+  16: "saju.hour.16", 18: "saju.hour.18", 20: "saju.hour.20", 22: "saju.hour.22",
+};
 
 const ELEMENT_COLORS: Record<string, string> = {
   wood: "#22c55e",
@@ -58,12 +52,12 @@ const ELEMENT_COLORS: Record<string, string> = {
   water: "#3b82f6",
 };
 
-const ELEMENT_LABELS: Record<string, string> = {
-  wood: "목",
-  fire: "화",
-  earth: "토",
-  metal: "금",
-  water: "수",
+const ELEMENT_LABEL_KEYS: Record<string, TranslationKey> = {
+  wood: "element.wood",
+  fire: "element.fire",
+  earth: "element.earth",
+  metal: "element.metal",
+  water: "element.water",
 };
 
 const GRADE_COLORS: Record<string, string> = {
@@ -77,11 +71,11 @@ const GRADE_COLORS: Record<string, string> = {
 
 // ─── Utility Components ─────────────────────────────────
 
-function ElementBar({ element, value }: { element: string; value: number }) {
+function ElementBar({ element, value, label }: { element: string; value: number; label: string }) {
   return (
     <div className="flex items-center gap-3">
       <span className="text-xs text-[var(--color-text-secondary)] w-6">
-        {ELEMENT_LABELS[element]}
+        {label}
       </span>
       <div className="flex-1 h-2.5 bg-[var(--color-bg-elevated)] rounded-full overflow-hidden">
         <div
@@ -209,6 +203,11 @@ function ChapterHeader({ title, subtitle, icon }: { title: string; subtitle?: st
 // ─── Main Page ──────────────────────────────────────────
 
 export default function SajuPage() {
+  const { t, locale } = useI18n();
+  const hours = useMemo(
+    () => HOUR_VALUES.map((v) => ({ value: v, label: t(HOUR_KEYS[v]) })),
+    [t],
+  );
   const cardRef = useRef<SajuCardHandle>(null);
   const [state, setState] = useState<SajuAnalysisState>({
     status: "idle",
@@ -349,13 +348,13 @@ export default function SajuPage() {
           href="/"
           className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--color-mystic-purple)]/10 border border-[var(--color-mystic-purple)]/20 text-xs text-[var(--color-mystic-purple-light)] mb-4"
         >
-          3-System Convergence
+          {t("saju.badge")}
         </Link>
         <h1 className="font-[family-name:var(--font-serif)] text-3xl font-bold text-purple-gradient mb-2">
-          운명교차점
+          {t("saju.title")}
         </h1>
         <p className="text-sm text-[var(--color-text-secondary)]">
-          동서양 3대 운명학이 만나는 순간 — 당신만의 에너지 지도
+          {t("saju.subtitle")}
         </p>
       </header>
 
@@ -367,13 +366,13 @@ export default function SajuPage() {
               {/* Name */}
               <div>
                 <label className="text-sm text-[var(--color-text-secondary)] mb-1 block">
-                  이름
+                  {t("saju.form.name")}
                 </label>
                 <input
                   type="text"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  placeholder="이름을 입력하세요"
+                  placeholder={t("saju.form.namePlaceholder")}
                   className="w-full px-4 py-3 rounded-xl bg-[var(--color-bg-base)] border border-[var(--color-border)] text-[var(--color-text-primary)] text-sm focus:outline-none focus:border-[var(--color-mystic-purple)]/50 transition"
                 />
               </div>
@@ -381,7 +380,7 @@ export default function SajuPage() {
               {/* Calendar Type */}
               <div>
                 <label className="text-sm text-[var(--color-text-secondary)] mb-2 block">
-                  달력
+                  {t("saju.form.calendar")}
                 </label>
                 <div className="flex gap-2">
                   {(["solar", "lunar"] as const).map((type) => (
@@ -394,7 +393,7 @@ export default function SajuPage() {
                           : "bg-[var(--color-bg-base)] border border-[var(--color-border)] text-[var(--color-text-secondary)]"
                       }`}
                     >
-                      {type === "solar" ? "양력" : "음력"}
+                      {type === "solar" ? t("saju.form.solar") : t("saju.form.lunar")}
                     </button>
                   ))}
                 </div>
@@ -403,14 +402,14 @@ export default function SajuPage() {
               {/* Birth Date */}
               <div>
                 <label className="text-sm text-[var(--color-text-secondary)] mb-1 block">
-                  생년월일
+                  {t("saju.form.birthDate")}
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   <input
                     type="number"
                     value={form.birthYear}
                     onChange={(e) => setForm({ ...form, birthYear: e.target.value })}
-                    placeholder="년 (1990)"
+                    placeholder={t("saju.form.yearPlaceholder")}
                     min="1920"
                     max="2026"
                     className="px-3 py-3 rounded-xl bg-[var(--color-bg-base)] border border-[var(--color-border)] text-[var(--color-text-primary)] text-sm text-center focus:outline-none focus:border-[var(--color-mystic-purple)]/50 transition"
@@ -419,7 +418,7 @@ export default function SajuPage() {
                     type="number"
                     value={form.birthMonth}
                     onChange={(e) => setForm({ ...form, birthMonth: e.target.value })}
-                    placeholder="월"
+                    placeholder={t("saju.form.monthPlaceholder")}
                     min="1"
                     max="12"
                     className="px-3 py-3 rounded-xl bg-[var(--color-bg-base)] border border-[var(--color-border)] text-[var(--color-text-primary)] text-sm text-center focus:outline-none focus:border-[var(--color-mystic-purple)]/50 transition"
@@ -428,7 +427,7 @@ export default function SajuPage() {
                     type="number"
                     value={form.birthDay}
                     onChange={(e) => setForm({ ...form, birthDay: e.target.value })}
-                    placeholder="일"
+                    placeholder={t("saju.form.dayPlaceholder")}
                     min="1"
                     max="31"
                     className="px-3 py-3 rounded-xl bg-[var(--color-bg-base)] border border-[var(--color-border)] text-[var(--color-text-primary)] text-sm text-center focus:outline-none focus:border-[var(--color-mystic-purple)]/50 transition"
@@ -439,14 +438,14 @@ export default function SajuPage() {
               {/* Birth Hour */}
               <div>
                 <label className="text-sm text-[var(--color-text-secondary)] mb-1 block">
-                  태어난 시간
+                  {t("saju.form.birthHour")}
                 </label>
                 <select
                   value={form.birthHour}
                   onChange={(e) => setForm({ ...form, birthHour: e.target.value })}
                   className="w-full px-4 py-3 rounded-xl bg-[var(--color-bg-base)] border border-[var(--color-border)] text-[var(--color-text-primary)] text-sm focus:outline-none focus:border-[var(--color-mystic-purple)]/50 transition"
                 >
-                  {HOURS.map((h) => (
+                  {hours.map((h) => (
                     <option key={h.value} value={h.value}>
                       {h.label}
                     </option>
@@ -457,7 +456,7 @@ export default function SajuPage() {
               {/* Gender */}
               <div>
                 <label className="text-sm text-[var(--color-text-secondary)] mb-2 block">
-                  성별
+                  {t("saju.form.gender")}
                 </label>
                 <div className="flex gap-2">
                   {(["male", "female"] as const).map((g) => (
@@ -470,7 +469,7 @@ export default function SajuPage() {
                           : "bg-[var(--color-bg-base)] border border-[var(--color-border)] text-[var(--color-text-secondary)]"
                       }`}
                     >
-                      {g === "male" ? "남성" : "여성"}
+                      {g === "male" ? t("saju.form.male") : t("saju.form.female")}
                     </button>
                   ))}
                 </div>
@@ -482,7 +481,7 @@ export default function SajuPage() {
                 onClick={() => setShowOptional(!showOptional)}
                 className="w-full flex items-center justify-center gap-1 text-xs text-[var(--color-mystic-purple-light)] hover:text-[var(--color-mystic-purple)] transition"
               >
-                <span>{showOptional ? "접기" : "더 정확한 분석을 원하시면 (선택)"}</span>
+                <span>{showOptional ? t("saju.form.optionalCollapse") : t("saju.form.optionalExpand")}</span>
                 <svg className={`w-3 h-3 transition-transform ${showOptional ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                 </svg>
@@ -493,13 +492,13 @@ export default function SajuPage() {
                   {/* Birth Place */}
                   <div>
                     <label className="text-sm text-[var(--color-text-secondary)] mb-1 block">
-                      태어난 곳 <span className="text-xs text-[var(--color-text-muted)]">(진태양시 보정 · Vedic 차트용)</span>
+                      {t("saju.form.birthPlace")} <span className="text-xs text-[var(--color-text-muted)]">{t("saju.form.birthPlaceHint")}</span>
                     </label>
                     <input
                       type="text"
                       value={form.birthPlace}
                       onChange={(e) => setForm({ ...form, birthPlace: e.target.value })}
-                      placeholder="예: 서울, 부산, Toronto"
+                      placeholder={t("saju.form.birthPlacePlaceholder")}
                       className="w-full px-4 py-3 rounded-xl bg-[var(--color-bg-base)] border border-[var(--color-border)] text-[var(--color-text-primary)] text-sm focus:outline-none focus:border-[var(--color-mystic-purple)]/50 transition"
                     />
                   </div>
@@ -508,12 +507,12 @@ export default function SajuPage() {
                   {/* Current Concern */}
                   <div>
                     <label className="text-sm text-[var(--color-text-secondary)] mb-1 block">
-                      현재 고민 <span className="text-xs text-[var(--color-text-muted)]">(주역 점괘용)</span>
+                      {t("saju.form.concern")} <span className="text-xs text-[var(--color-text-muted)]">{t("saju.form.concernHint")}</span>
                     </label>
                     <textarea
                       value={form.currentConcern}
                       onChange={(e) => setForm({ ...form, currentConcern: e.target.value })}
-                      placeholder="예: 이직을 해야 할지 고민입니다"
+                      placeholder={t("saju.form.concernPlaceholder")}
                       rows={2}
                       className="w-full px-4 py-3 rounded-xl bg-[var(--color-bg-base)] border border-[var(--color-border)] text-[var(--color-text-primary)] text-sm focus:outline-none focus:border-[var(--color-mystic-purple)]/50 transition resize-none"
                     />
@@ -531,7 +530,7 @@ export default function SajuPage() {
                   : "bg-[var(--color-bg-elevated)] text-[var(--color-text-muted)] cursor-not-allowed"
               }`}
             >
-              운명 분석 시작하기
+              {t("saju.form.submit")}
             </button>
           </div>
         )}
@@ -552,7 +551,7 @@ export default function SajuPage() {
               onClick={handleReset}
               className="py-3 px-6 rounded-xl border border-[var(--color-border)] text-[var(--color-text-primary)] font-semibold text-sm hover:border-[var(--color-mystic-purple)]/50 transition"
             >
-              다시 시도하기
+              {t("saju.form.retry")}
             </button>
           </div>
         )}
@@ -579,28 +578,28 @@ export default function SajuPage() {
                 <div className="relative">
                   <div className="flex items-center justify-center gap-2 mb-4">
                     <h3 className="font-[family-name:var(--font-serif)] font-bold text-sm text-[var(--color-teal)]">
-                      3대 시스템 합의점
+                      {t("saju.result.convergence")}
                     </h3>
                     <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-[var(--color-teal)]/10 text-[var(--color-teal)]">
-                      {r.quadConvergence.agreementLevel}/3 일치
+                      {r.quadConvergence.agreementLevel}/3 {t("saju.result.convergenceLevel")}
                     </span>
                   </div>
                   <p className="text-xs text-[var(--color-text-muted)] text-center mb-2">
-                    동서양 운명학이 한 목소리로 말하는 핵심 운명
+                    {t("saju.result.convergenceSubtitle")}
                   </p>
                   <div className="text-center mb-4">
                     <p className="text-2xl font-bold text-[var(--color-text-primary)] font-[family-name:var(--font-serif)]">
                       {r.quadConvergence.energyVerdictKr}
                     </p>
                     <p className="text-xs text-[var(--color-text-muted)] mt-1">
-                      수렴: {r.quadConvergence.convergingSystems.join(" · ")}
+                      {t("saju.result.convergingSystems")} {r.quadConvergence.convergingSystems.join(" · ")}
                     </p>
                   </div>
                   <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed mb-3">
                     {r.quadConvergence.coreMessage}
                   </p>
                   <div className="p-3 rounded-lg bg-[var(--color-teal)]/5 border border-[var(--color-teal)]/20 mb-3">
-                    <p className="text-xs text-[var(--color-text-muted)] mb-1">지금 딱 하나만 한다면</p>
+                    <p className="text-xs text-[var(--color-text-muted)] mb-1">{t("saju.result.oneAction")}</p>
                     <p className="text-sm font-semibold text-[var(--color-teal)]">
                       {r.quadConvergence.oneAction}
                     </p>
@@ -612,10 +611,22 @@ export default function SajuPage() {
               </section>
             )}
 
+            {/* ═══ 에너지 분석 (Fortune Scores) ═══ */}
+            <section className="space-y-3">
+              <h3 className="font-semibold text-sm text-[var(--color-text-primary)]">
+                {t("saju.result.energyAnalysis")}
+              </h3>
+              <FortuneRow icon="💕" title={t("saju.result.fortune.love")} fortune={r.fortunes.love} />
+              <FortuneRow icon="💰" title={t("saju.result.fortune.wealth")} fortune={r.fortunes.wealth} />
+              <FortuneRow icon="🎯" title={t("saju.result.fortune.career")} fortune={r.fortunes.career} />
+              <FortuneRow icon="⚡" title={t("saju.result.fortune.health")} fortune={r.fortunes.health} />
+              <FortuneRow icon="👑" title={t("saju.result.fortune.fame")} fortune={r.fortunes.fame} />
+            </section>
+
             {/* ═══ 만세력 — Full Saju Chart ═══ */}
             {sajuChart && (() => {
               const positions = ["hour", "day", "month", "year"] as const;
-              const posLabels = { hour: "시주", day: "일주", month: "월주", year: "년주" };
+              const posLabels = { hour: t("saju.chart.hour"), day: t("saju.chart.day"), month: t("saju.chart.month"), year: t("saju.chart.year") };
               const stemElementColor: Record<string, string> = {
                 "甲": "#22c55e", "乙": "#22c55e", // wood - green
                 "丙": "#ef4444", "丁": "#ef4444", // fire - red
@@ -631,7 +642,7 @@ export default function SajuPage() {
               return (
                 <section className="p-4 rounded-2xl bg-[var(--color-bg-card)] border border-[var(--color-border)]">
                   <h3 className="font-semibold text-sm text-[var(--color-sacred-gold)] mb-3 text-center">
-                    만세력
+                    {t("saju.chart.title")}
                   </h3>
                   {/* Column headers */}
                   <div className="grid grid-cols-[48px_repeat(4,1fr)] gap-0.5 text-center">
@@ -641,7 +652,7 @@ export default function SajuPage() {
                     ))}
 
                     {/* 천간 row */}
-                    <div className="flex items-center justify-center text-[10px] text-[var(--color-text-muted)]">천간</div>
+                    <div className="flex items-center justify-center text-[10px] text-[var(--color-text-muted)]">{t("saju.chart.heavenlyStem")}</div>
                     {positions.map((pos) => {
                       const p = sajuChart?.pillars?.[pos];
                       const tg = sajuChart?.tenGods?.[pos];
@@ -658,7 +669,7 @@ export default function SajuPage() {
                     })}
 
                     {/* 지지 row */}
-                    <div className="flex items-center justify-center text-[10px] text-[var(--color-text-muted)]">지지</div>
+                    <div className="flex items-center justify-center text-[10px] text-[var(--color-text-muted)]">{t("saju.chart.earthlyBranch")}</div>
                     {positions.map((pos) => {
                       const p = sajuChart?.pillars?.[pos];
                       const tg = sajuChart?.tenGods?.[pos];
@@ -689,7 +700,7 @@ export default function SajuPage() {
                     })}
 
                     {/* 12운성 row */}
-                    <div className="flex items-center justify-center text-[10px] text-[var(--color-text-muted)]">12운성</div>
+                    <div className="flex items-center justify-center text-[10px] text-[var(--color-text-muted)]">{t("saju.chart.twelveStages")}</div>
                     {positions.map((pos) => {
                       const stage = sajuChart?.twelveStages?.[pos];
                       const stageColor = stage?.strength === "strong" ? "#22c55e" : stage?.strength === "weak" ? "#ef4444" : "var(--color-text-secondary)";
@@ -701,7 +712,7 @@ export default function SajuPage() {
                     })}
 
                     {/* 신살 row */}
-                    <div className="flex items-center justify-center text-[10px] text-[var(--color-text-muted)]">신살</div>
+                    <div className="flex items-center justify-center text-[10px] text-[var(--color-text-muted)]">{t("saju.chart.sinsals")}</div>
                     {positions.map((pos) => {
                       const sinsals = sajuChart?.sinsalsByPosition?.[pos] ?? [];
                       return (
@@ -748,7 +759,7 @@ export default function SajuPage() {
                     </div>
                     <div className="flex justify-between mt-1">
                       {(["wood", "fire", "earth", "metal", "water"] as const).map((el) => (
-                        <span key={el} className="text-[9px]" style={{ color: ELEMENT_COLORS[el] }}>{ELEMENT_LABELS[el]} {sajuChart?.elementBalance?.[el] ?? 20}%</span>
+                        <span key={el} className="text-[9px]" style={{ color: ELEMENT_COLORS[el] }}>{t(ELEMENT_LABEL_KEYS[el])} {sajuChart?.elementBalance?.[el] ?? 20}%</span>
                       ))}
                     </div>
                   </div>
@@ -760,7 +771,7 @@ export default function SajuPage() {
             {r.fourPillarsAnalysis && (
               <section className="p-5 rounded-2xl bg-[var(--color-bg-card)] border border-[var(--color-border)]">
                 <h3 className="font-semibold text-sm text-[var(--color-sacred-gold)] mb-4">
-                  사주팔자 해석
+                  {t("saju.fourPillars.title")}
                 </h3>
                 <div className="space-y-4">
                   {[
@@ -780,7 +791,7 @@ export default function SajuPage() {
                   ))}
                 </div>
                 <div className="mt-4 p-3 rounded-lg bg-[var(--color-mystic-purple)]/5 border border-[var(--color-mystic-purple)]/20">
-                  <p className="text-xs text-[var(--color-text-muted)] mb-1 font-semibold">네 기둥의 상호작용</p>
+                  <p className="text-xs text-[var(--color-text-muted)] mb-1 font-semibold">{t("saju.fourPillars.interplay")}</p>
                   <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
                     {r.fourPillarsAnalysis.pillarsInterplay}
                   </p>
@@ -789,20 +800,20 @@ export default function SajuPage() {
             )}
 
             {/* ═══ CH1: 당신의 본질 ═══ */}
-            <ChapterHeader icon="✦" title="당신의 본질" />
+            <ChapterHeader icon="✦" title={t("saju.ch1.title")} />
 
             {/* Destiny Type Hero */}
             <section className="relative p-6 rounded-2xl bg-gradient-to-b from-[var(--color-mystic-purple)]/15 to-[var(--color-bg-card)] border border-[var(--color-mystic-purple)]/30 text-center overflow-hidden">
               <div className="absolute inset-0 opacity-5 bg-[radial-gradient(circle_at_center,var(--color-mystic-purple)_0%,transparent_70%)]" />
               <div className="relative">
                 <p className="text-xs text-[var(--color-text-muted)] mb-3">
-                  {state.input?.name}님의 운명 유형
+                  {state.input?.name}{t("saju.destiny.type")}
                 </p>
                 <div className="text-6xl font-bold font-[family-name:var(--font-serif)] text-purple-gradient mb-2">
                   {r.destinyType?.hanja ?? "?"}
                 </div>
                 <p className="text-lg font-bold text-[var(--color-text-primary)] mb-1">
-                  {r.destinyType?.title ?? "운명 유형"}
+                  {r.destinyType?.title ?? t("saju.destiny.fallback")}
                 </p>
                 <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed max-w-xs mx-auto">
                   {r.destinyType?.description ?? ""}
@@ -812,7 +823,7 @@ export default function SajuPage() {
 
             {/* Grade Badge */}
             <section className="p-5 rounded-2xl bg-[var(--color-bg-card)] border border-[var(--color-border)] text-center">
-              <p className="text-xs text-[var(--color-text-muted)] mb-2">종합 운세 등급</p>
+              <p className="text-xs text-[var(--color-text-muted)] mb-2">{t("saju.destiny.grade")}</p>
               <div className="flex items-center justify-center gap-3 mb-2">
                 <span
                   className="text-4xl font-black font-mono tracking-tighter"
@@ -822,9 +833,9 @@ export default function SajuPage() {
                 </span>
                 <div className="text-left">
                   <p className="text-sm font-semibold text-[var(--color-text-primary)]">
-                    상위 {r.overallGrade?.nationalPercentile ?? "?"}%
+                    {t("saju.destiny.top")} {r.overallGrade?.nationalPercentile ?? "?"}%
                   </p>
-                  <p className="text-xs text-[var(--color-text-muted)]">전국 기준</p>
+                  <p className="text-xs text-[var(--color-text-muted)]">{t("saju.destiny.national")}</p>
                 </div>
               </div>
               <p className="text-sm text-[var(--color-sacred-gold)]">
@@ -835,7 +846,7 @@ export default function SajuPage() {
             {/* Day Master + Element Balance */}
             <section className="p-5 rounded-2xl bg-[var(--color-bg-card)] border border-[var(--color-border)]">
               <div className="text-center mb-4">
-                <p className="text-xs text-[var(--color-mystic-purple-light)] mb-1">일간</p>
+                <p className="text-xs text-[var(--color-mystic-purple-light)] mb-1">{t("saju.dayMaster.label")}</p>
                 <h2 className="font-[family-name:var(--font-serif)] text-2xl font-bold text-purple-gradient">
                   {r.dayMaster}
                 </h2>
@@ -844,11 +855,11 @@ export default function SajuPage() {
                 {r.dayMasterDescription}
               </p>
               <h3 className="font-semibold text-xs text-[var(--color-text-muted)] mb-3 uppercase tracking-wider">
-                오행 밸런스
+                {t("saju.dayMaster.elementBalance")}
               </h3>
               <div className="space-y-2.5">
                 {(["wood", "fire", "earth", "metal", "water"] as const).map((el) => (
-                  <ElementBar key={el} element={el} value={r.elementBalance[el]} />
+                  <ElementBar key={el} element={el} value={r.elementBalance[el]} label={t(ELEMENT_LABEL_KEYS[el])} />
                 ))}
               </div>
             </section>
@@ -856,7 +867,7 @@ export default function SajuPage() {
             {/* Personality */}
             <section className="p-5 rounded-2xl bg-[var(--color-bg-card)] border border-[var(--color-border)]">
               <h3 className="font-semibold text-sm text-[var(--color-sacred-gold)] mb-3">
-                성격 분석
+                {t("saju.personality.title")}
               </h3>
               <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
                 {r.personality}
@@ -866,14 +877,14 @@ export default function SajuPage() {
             {/* Hidden Self */}
             <section className="p-5 rounded-2xl bg-[var(--color-bg-card)] border border-[var(--color-border)]">
               <h3 className="font-semibold text-sm text-[var(--color-sacred-gold)] mb-3">
-                숨겨진 매력과 재능
+                {t("saju.hiddenSelf.title")}
               </h3>
               <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed mb-4">
                 {r.hiddenSelf?.outerVsInner}
               </p>
               <div className="space-y-2 mb-4">
                 <p className="text-xs text-[var(--color-text-muted)] font-semibold uppercase tracking-wider">
-                  숨겨진 재능
+                  {t("saju.hiddenSelf.talents")}
                 </p>
                 {r.hiddenSelf?.talents.map((talent, i) => (
                   <div
@@ -888,7 +899,7 @@ export default function SajuPage() {
                 ))}
               </div>
               <div className="p-3 rounded-lg bg-[var(--color-sacred-gold)]/5 border border-[var(--color-sacred-gold)]/20">
-                <p className="text-xs text-[var(--color-text-muted)] mb-1">조선시대 전생</p>
+                <p className="text-xs text-[var(--color-text-muted)] mb-1">{t("saju.hiddenSelf.pastLife")}</p>
                 <p className="text-sm text-[var(--color-sacred-gold)]">
                   {r.hiddenSelf?.pastLife}
                 </p>
@@ -896,17 +907,17 @@ export default function SajuPage() {
             </section>
 
             {/* ═══ CH2: 인생의 흐름 ═══ */}
-            <ChapterHeader icon="〰" title="인생의 흐름" subtitle="연애, 재물, 직업 — 당신의 에너지가 향하는 곳" />
+            <ChapterHeader icon="〰" title={t("saju.ch2.title")} subtitle={t("saju.ch2.subtitle")} />
 
             {/* Life Narrative */}
             <section className="p-5 rounded-2xl bg-[var(--color-bg-card)] border border-[var(--color-border)]">
               <h3 className="font-semibold text-sm text-[var(--color-sacred-gold)] mb-4">
-                인생 서사
+                {t("saju.lifeNarrative.title")}
               </h3>
               <div className="relative pl-4 border-l-2 border-[var(--color-mystic-purple)]/30 space-y-4">
                 <div>
                   <p className="text-xs text-[var(--color-mystic-purple-light)] font-semibold mb-1">
-                    초년 (1-30세)
+                    {t("saju.lifeNarrative.early")}
                   </p>
                   <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
                     {r.lifeNarrative?.past}
@@ -914,7 +925,7 @@ export default function SajuPage() {
                 </div>
                 <div>
                   <p className="text-xs text-[var(--color-mystic-purple-light)] font-semibold mb-1">
-                    중년 (31-50세)
+                    {t("saju.lifeNarrative.mid")}
                   </p>
                   <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
                     {r.lifeNarrative?.present}
@@ -922,7 +933,7 @@ export default function SajuPage() {
                 </div>
                 <div>
                   <p className="text-xs text-[var(--color-mystic-purple-light)] font-semibold mb-1">
-                    말년 (51세~)
+                    {t("saju.lifeNarrative.late")}
                   </p>
                   <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
                     {r.lifeNarrative?.future}
@@ -936,31 +947,19 @@ export default function SajuPage() {
               </div>
             </section>
 
-            {/* Fortune Scores */}
-            <section className="space-y-3">
-              <h3 className="font-semibold text-sm text-[var(--color-text-primary)]">
-                에너지 분석
-              </h3>
-              <FortuneRow icon="💕" title="감정 에너지 (연애)" fortune={r.fortunes.love} />
-              <FortuneRow icon="💰" title="풍요 에너지 (재물)" fortune={r.fortunes.wealth} />
-              <FortuneRow icon="🎯" title="재능 에너지 (직업)" fortune={r.fortunes.career} />
-              <FortuneRow icon="⚡" title="생명 에너지 (건강)" fortune={r.fortunes.health} />
-              <FortuneRow icon="👑" title="성취 에너지 (명예)" fortune={r.fortunes.fame} />
-            </section>
-
             {/* ═══ CH3: 관계와 타이밍 ═══ */}
-            <ChapterHeader icon="◈" title="관계와 타이밍" subtitle="누구와, 언제 — 운명의 교차점" />
+            <ChapterHeader icon="◈" title={t("saju.ch3.title")} subtitle={t("saju.ch3.subtitle")} />
 
             {/* Compatibility */}
             <section className="p-5 rounded-2xl bg-[var(--color-bg-card)] border border-[var(--color-border)]">
               <h3 className="font-semibold text-sm text-[var(--color-sacred-gold)] mb-4">
-                궁합 분석
+                {t("saju.compatibility.title")}
               </h3>
               <div className="space-y-3">
                 {[
-                  { label: "최고의 파트너", data: r.compatibility?.best, color: "#22c55e" },
-                  { label: "운명의 소울메이트", data: r.compatibility?.soulmate, color: "#ec4899" },
-                  { label: "주의해야 할 유형", data: r.compatibility?.rival, color: "#ef4444" },
+                  { label: t("saju.compatibility.best"), data: r.compatibility?.best, color: "#22c55e" },
+                  { label: t("saju.compatibility.soulmate"), data: r.compatibility?.soulmate, color: "#ec4899" },
+                  { label: t("saju.compatibility.rival"), data: r.compatibility?.rival, color: "#ef4444" },
                 ].map((item) => (
                   <div
                     key={item.label}
@@ -996,7 +995,7 @@ export default function SajuPage() {
             <section className="p-5 rounded-2xl bg-[var(--color-bg-card)] border border-[var(--color-border)]">
               <div className="flex items-center gap-2 mb-3">
                 <h3 className="font-semibold text-sm text-[var(--color-text-primary)]">
-                  {r.yearlyFortune?.year}년 운세
+                  {r.yearlyFortune?.year}{t("saju.yearly.fortune")}
                 </h3>
                 <span
                   className="px-2 py-0.5 text-xs font-bold rounded-full font-mono"
@@ -1018,7 +1017,7 @@ export default function SajuPage() {
               {r.yearlyFortune?.destinyEvents && r.yearlyFortune?.destinyEvents.length > 0 && (
                 <div className="space-y-2">
                   <p className="text-xs text-[var(--color-text-muted)] font-semibold uppercase tracking-wider">
-                    주요 운명 이벤트
+                    {t("saju.yearly.events")}
                   </p>
                   {r.yearlyFortune?.destinyEvents.map((evt, i) => (
                     <EventCard key={i} event={evt} />
@@ -1031,7 +1030,7 @@ export default function SajuPage() {
             {r.monthlyFortunes && r.monthlyFortunes.length > 0 && (
               <section className="p-5 rounded-2xl bg-[var(--color-bg-card)] border border-[var(--color-border)]">
                 <h3 className="font-semibold text-sm text-[var(--color-text-primary)] mb-3">
-                  월별 운세
+                  {t("saju.monthly.title")}
                 </h3>
                 <div className="grid grid-cols-3 gap-2">
                   {r.monthlyFortunes.map((m) => (
@@ -1042,13 +1041,13 @@ export default function SajuPage() {
             )}
 
             {/* ═══ CH4: 불편한 진실 ═══ */}
-            <ChapterHeader icon="⚠" title="불편한 진실" subtitle="인정하기 싫지만 4개 시스템이 공통으로 경고합니다" />
+            <ChapterHeader icon="⚠" title={t("saju.ch4.title")} subtitle={t("saju.ch4.subtitle")} />
 
             {/* Danger Warnings */}
             {r.dangerWarnings && r.dangerWarnings.length > 0 && (
               <section className="p-5 rounded-2xl bg-[var(--color-crimson)]/5 border border-[var(--color-crimson)]/20">
                 <h3 className="font-semibold text-sm text-[var(--color-crimson)] mb-3">
-                  주의 경고
+                  {t("saju.danger.title")}
                 </h3>
                 <div className="space-y-3">
                   {r.dangerWarnings.map((warn, i) => (
@@ -1071,7 +1070,7 @@ export default function SajuPage() {
             )}
 
             {/* ═══ CH5: 심화 시스템 분석 ═══ */}
-            <ChapterHeader icon="🔬" title="심화 시스템 분석" subtitle="사주 · Vedic · 주역 개별 분석" />
+            <ChapterHeader icon="🔬" title={t("saju.ch5.title")} subtitle={t("saju.ch5.subtitle")} />
 
             {/* Vedic Dasha */}
             {r.vedicDasha && (
@@ -1079,18 +1078,18 @@ export default function SajuPage() {
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-lg">🪐</span>
                   <h3 className="font-semibold text-sm text-[var(--color-sacred-gold)]">
-                    Vedic Dasha — 행성 에너지 주기
+                    {t("saju.vedic.title")}
                   </h3>
                 </div>
                 <div className="p-3 rounded-lg bg-[var(--color-bg-base)] mb-3">
-                  <p className="text-xs text-[var(--color-text-muted)] mb-1">출생 Nakshatra (별)</p>
+                  <p className="text-xs text-[var(--color-text-muted)] mb-1">{t("saju.vedic.nakshatra")}</p>
                   <p className="text-sm font-semibold text-[var(--color-text-primary)]">
                     {r.vedicDasha.nakshatra}
                   </p>
                 </div>
                 <div className="grid grid-cols-2 gap-2 mb-3">
                   <div className="p-3 rounded-lg bg-[var(--color-bg-base)]">
-                    <p className="text-xs text-[var(--color-text-muted)] mb-1">Mahadasha (대주기)</p>
+                    <p className="text-xs text-[var(--color-text-muted)] mb-1">{t("saju.vedic.mahadasha")}</p>
                     <p className="text-sm font-semibold text-[var(--color-text-primary)]">
                       {r.vedicDasha.mahadasha.planet}
                     </p>
@@ -1102,7 +1101,7 @@ export default function SajuPage() {
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-[var(--color-bg-base)]">
-                    <p className="text-xs text-[var(--color-text-muted)] mb-1">Antardasha (소주기)</p>
+                    <p className="text-xs text-[var(--color-text-muted)] mb-1">{t("saju.vedic.antardasha")}</p>
                     <p className="text-sm font-semibold text-[var(--color-text-primary)]">
                       {r.vedicDasha.antardasha.planet}
                     </p>
@@ -1129,7 +1128,7 @@ export default function SajuPage() {
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-lg">☯</span>
                   <h3 className="font-semibold text-sm text-[var(--color-sacred-gold)]">
-                    주역 — 변화의 지혜
+                    {t("saju.iching.title")}
                   </h3>
                 </div>
                 <div className="text-center p-4 rounded-lg bg-[var(--color-bg-base)] mb-3">
@@ -1149,14 +1148,14 @@ export default function SajuPage() {
                 <div className="grid grid-cols-2 gap-2 mb-3">
                   <div className="p-3 rounded-lg bg-[var(--color-bg-base)]">
                     <p className="text-xs text-[var(--color-text-muted)] mb-1">
-                      변효 ({r.iChing.changingLine.position}효)
+                      {t("saju.iching.changingLine")} ({r.iChing.changingLine.position}{t("saju.iching.changingLinePos")})
                     </p>
                     <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
                       {r.iChing.changingLine.advice}
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-[var(--color-bg-base)]">
-                    <p className="text-xs text-[var(--color-text-muted)] mb-1">지괘 (미래 방향)</p>
+                    <p className="text-xs text-[var(--color-text-muted)] mb-1">{t("saju.iching.transformed")}</p>
                     <p className="text-sm font-semibold text-[var(--color-text-primary)]">
                       {r.iChing.transformedHexagram}
                     </p>
@@ -1174,13 +1173,13 @@ export default function SajuPage() {
             )}
 
             {/* ═══ CH6: 운세 활용법 ═══ */}
-            <ChapterHeader icon="🚀" title="운세 활용법" subtitle="에너지를 극대화하는 실천 가이드" />
+            <ChapterHeader icon="🚀" title={t("saju.ch6.title")} subtitle={t("saju.ch6.subtitle")} />
 
             {/* Luck Boosters */}
             {r.luckBoosters && r.luckBoosters.length > 0 && (
               <section className="p-5 rounded-2xl bg-[var(--color-mystic-purple)]/5 border border-[var(--color-mystic-purple)]/20">
                 <h3 className="font-semibold text-sm text-[var(--color-mystic-purple-light)] mb-3">
-                  지금 바로 운 올리는 법
+                  {t("saju.luckBoosters.title")}
                 </h3>
                 <div className="space-y-2">
                   {r.luckBoosters.map((boost, i) => (
@@ -1205,15 +1204,15 @@ export default function SajuPage() {
             {/* Lucky Elements */}
             <section className="p-5 rounded-2xl bg-[var(--color-bg-card)] border border-[var(--color-border)]">
               <h3 className="font-semibold text-sm text-[var(--color-text-primary)] mb-3">
-                행운의 요소
+                {t("saju.luckyElements.title")}
               </h3>
               <div className="grid grid-cols-3 gap-2">
                 {[
-                  { label: "색상", value: r.luckyElements?.color },
-                  { label: "숫자", value: String(r.luckyElements?.number) },
-                  { label: "방향", value: r.luckyElements?.direction },
-                  { label: "계절", value: r.luckyElements?.season },
-                  { label: "아이템", value: r.luckyElements?.item },
+                  { label: t("saju.luckyElements.color"), value: r.luckyElements?.color },
+                  { label: t("saju.luckyElements.number"), value: String(r.luckyElements?.number) },
+                  { label: t("saju.luckyElements.direction"), value: r.luckyElements?.direction },
+                  { label: t("saju.luckyElements.season"), value: r.luckyElements?.season },
+                  { label: t("saju.luckyElements.item"), value: r.luckyElements?.item },
                 ].map((item) => (
                   <div
                     key={item.label}
@@ -1247,7 +1246,7 @@ export default function SajuPage() {
               onClick={handleReset}
               className="w-full py-3.5 rounded-xl border border-[var(--color-border)] text-[var(--color-text-primary)] font-semibold text-sm hover:border-[var(--color-mystic-purple)]/50 transition"
             >
-              다시 하기
+              {t("saju.form.reset")}
             </button>
           </div>
         )}
