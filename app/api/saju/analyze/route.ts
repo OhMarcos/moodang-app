@@ -289,7 +289,10 @@ export async function POST(request: NextRequest) {
       { status: 500 },
     );
   } catch (error) {
-    console.error("Saju analysis error:", error instanceof Error ? error.message : error);
+    const errMsg = error instanceof Error ? error.message : String(error);
+    const errStack = error instanceof Error ? error.stack : "";
+    console.error("Saju analysis error:", errMsg);
+    console.error("Saju analysis stack:", errStack);
     return NextResponse.json(
       { error: "사주 분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요." },
       { status: 500 },
