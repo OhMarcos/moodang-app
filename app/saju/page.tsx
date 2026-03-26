@@ -643,13 +643,13 @@ export default function SajuPage() {
                     {/* 천간 row */}
                     <div className="flex items-center justify-center text-[10px] text-[var(--color-text-muted)]">천간</div>
                     {positions.map((pos) => {
-                      const p = sajuChart.pillars[pos];
-                      const tg = sajuChart.tenGods[pos];
+                      const p = sajuChart?.pillars?.[pos];
+                      const tg = sajuChart?.tenGods?.[pos];
                       const isDayMaster = pos === "day";
                       return (
                         <div key={`stem-${pos}`} className={`py-2.5 rounded-md ${isDayMaster ? "bg-[var(--color-mystic-purple)]/15 border border-[var(--color-mystic-purple)]/30" : "bg-[var(--color-bg-base)]"}`}>
-                          <p className="text-2xl font-bold font-[family-name:var(--font-serif)]" style={{ color: stemElementColor[p.stem] ?? "inherit" }}>{p.stem}</p>
-                          <p className="text-[10px] text-[var(--color-text-muted)]">{p.stemKr}</p>
+                          <p className="text-2xl font-bold font-[family-name:var(--font-serif)]" style={{ color: stemElementColor[p?.stem ?? ""] ?? "inherit" }}>{p?.stem ?? "?"}</p>
+                          <p className="text-[10px] text-[var(--color-text-muted)]">{p?.stemKr ?? "?"}</p>
                           <p className="text-[10px] mt-0.5" style={{ color: isDayMaster ? "var(--color-mystic-purple-light)" : "var(--color-text-secondary)" }}>
                             {isDayMaster ? "일주" : tg?.stem?.tenGod?.korean ?? ""}
                           </p>
@@ -660,13 +660,13 @@ export default function SajuPage() {
                     {/* 지지 row */}
                     <div className="flex items-center justify-center text-[10px] text-[var(--color-text-muted)]">지지</div>
                     {positions.map((pos) => {
-                      const p = sajuChart.pillars[pos];
-                      const tg = sajuChart.tenGods[pos];
+                      const p = sajuChart?.pillars?.[pos];
+                      const tg = sajuChart?.tenGods?.[pos];
                       const isDayMaster = pos === "day";
                       return (
                         <div key={`branch-${pos}`} className={`py-2.5 rounded-md ${isDayMaster ? "bg-[var(--color-mystic-purple)]/10 border border-[var(--color-mystic-purple)]/20" : "bg-[var(--color-bg-base)]"}`}>
-                          <p className="text-2xl font-bold font-[family-name:var(--font-serif)]" style={{ color: branchElementColor[p.branch] ?? "inherit" }}>{p.branch}</p>
-                          <p className="text-[10px] text-[var(--color-text-muted)]">{p.branchKr}</p>
+                          <p className="text-2xl font-bold font-[family-name:var(--font-serif)]" style={{ color: branchElementColor[p?.branch ?? ""] ?? "inherit" }}>{p?.branch ?? "?"}</p>
+                          <p className="text-[10px] text-[var(--color-text-muted)]">{p?.branchKr ?? "?"}</p>
                           <p className="text-[10px] text-[var(--color-text-secondary)] mt-0.5">{tg?.branch?.tenGod?.korean ?? ""}</p>
                         </div>
                       );
@@ -675,12 +675,12 @@ export default function SajuPage() {
                     {/* 지장간 row (hidden stems) */}
                     <div className="flex items-center justify-center text-[10px] text-[var(--color-text-muted)]">지장간</div>
                     {positions.map((pos) => {
-                      const tg = sajuChart.tenGods[pos];
+                      const tg = sajuChart?.tenGods?.[pos];
                       return (
                         <div key={`hidden-${pos}`} className="py-1.5 rounded-md bg-[var(--color-bg-base)]">
-                          {tg.branch.hiddenStems.map((hs, i) => (
+                          {(tg?.branch?.hiddenStems ?? []).map((hs, i) => (
                             <p key={i} className="text-[10px] text-[var(--color-text-secondary)]">
-                              <span className="font-medium" style={{ color: stemElementColor[hs.stem] ?? "inherit" }}>{hs.stem}</span>
+                              <span className="font-medium" style={{ color: stemElementColor[hs?.stem ?? ""] ?? "inherit" }}>{hs?.stem ?? ""}</span>
                               <span className="text-[var(--color-text-muted)]"> {hs?.tenGod?.korean ?? ""}</span>
                             </p>
                           ))}
@@ -691,11 +691,11 @@ export default function SajuPage() {
                     {/* 12운성 row */}
                     <div className="flex items-center justify-center text-[10px] text-[var(--color-text-muted)]">12운성</div>
                     {positions.map((pos) => {
-                      const stage = sajuChart.twelveStages[pos];
-                      const stageColor = stage.strength === "strong" ? "#22c55e" : stage.strength === "weak" ? "#ef4444" : "var(--color-text-secondary)";
+                      const stage = sajuChart?.twelveStages?.[pos];
+                      const stageColor = stage?.strength === "strong" ? "#22c55e" : stage?.strength === "weak" ? "#ef4444" : "var(--color-text-secondary)";
                       return (
                         <div key={`stage-${pos}`} className="py-1.5 rounded-md bg-[var(--color-bg-base)]">
-                          <p className="text-[11px] font-medium" style={{ color: stageColor }}>{stage.korean}</p>
+                          <p className="text-[11px] font-medium" style={{ color: stageColor }}>{stage?.korean ?? "-"}</p>
                         </div>
                       );
                     })}
@@ -703,12 +703,12 @@ export default function SajuPage() {
                     {/* 신살 row */}
                     <div className="flex items-center justify-center text-[10px] text-[var(--color-text-muted)]">신살</div>
                     {positions.map((pos) => {
-                      const sinsals = sajuChart.sinsalsByPosition[pos];
+                      const sinsals = sajuChart?.sinsalsByPosition?.[pos] ?? [];
                       return (
                         <div key={`sinsal-${pos}`} className="py-1 rounded-md bg-[var(--color-bg-base)]">
                           {sinsals.length > 0 ? sinsals.slice(0, 2).map((s, i) => (
-                            <p key={i} className="text-[9px] leading-tight" style={{ color: s.type === "auspicious" ? "#22c55e" : s.type === "inauspicious" ? "#ef4444" : "var(--color-text-secondary)" }}>
-                              {s.korean}
+                            <p key={i} className="text-[9px] leading-tight" style={{ color: s?.type === "auspicious" ? "#22c55e" : s?.type === "inauspicious" ? "#ef4444" : "var(--color-text-secondary)" }}>
+                              {s?.korean ?? "-"}
                             </p>
                           )) : <p className="text-[9px] text-[var(--color-text-muted)]">-</p>}
                         </div>
@@ -720,8 +720,8 @@ export default function SajuPage() {
                   <div className="grid grid-cols-3 gap-2 mt-4">
                     <div className="p-2 rounded-lg bg-[var(--color-bg-base)] text-center">
                       <p className="text-[10px] text-[var(--color-text-muted)]">신강/신약</p>
-                      <p className="text-sm font-bold text-[var(--color-text-primary)]">{sajuChart.strength.levelKr}</p>
-                      <p className="text-[10px] text-[var(--color-text-muted)]">{sajuChart.strength.score}점</p>
+                      <p className="text-sm font-bold text-[var(--color-text-primary)]">{sajuChart?.strength?.levelKr ?? "-"}</p>
+                      <p className="text-[10px] text-[var(--color-text-muted)]">{sajuChart?.strength?.score ?? 0}점</p>
                     </div>
                     <div className="p-2 rounded-lg bg-[var(--color-bg-base)] text-center">
                       <p className="text-[10px] text-[var(--color-text-muted)]">용신</p>
@@ -732,10 +732,10 @@ export default function SajuPage() {
                     </div>
                     <div className="p-2 rounded-lg bg-[var(--color-bg-base)] text-center">
                       <p className="text-[10px] text-[var(--color-text-muted)]">일간</p>
-                      <p className="text-sm font-bold" style={{ color: stemElementColor[sajuChart.dayMaster.stem] ?? "inherit" }}>
-                        {sajuChart.dayMaster.stem} {sajuChart.dayMaster.stemKr}
+                      <p className="text-sm font-bold" style={{ color: stemElementColor[sajuChart?.dayMaster?.stem ?? ""] ?? "inherit" }}>
+                        {sajuChart?.dayMaster?.stem ?? ""} {sajuChart?.dayMaster?.stemKr ?? ""}
                       </p>
-                      <p className="text-[10px] text-[var(--color-text-muted)]">{sajuChart.dayMaster.elementKr} {sajuChart.dayMaster.polarityKr}</p>
+                      <p className="text-[10px] text-[var(--color-text-muted)]">{sajuChart?.dayMaster?.elementKr ?? ""} {sajuChart?.dayMaster?.polarityKr ?? ""}</p>
                     </div>
                   </div>
 
@@ -743,12 +743,12 @@ export default function SajuPage() {
                   <div className="mt-3">
                     <div className="flex gap-0.5 h-3 rounded-full overflow-hidden">
                       {(["wood", "fire", "earth", "metal", "water"] as const).map((el) => (
-                        <div key={el} style={{ width: `${sajuChart.elementBalance[el]}%`, backgroundColor: ELEMENT_COLORS[el] }} className="transition-all" />
+                        <div key={el} style={{ width: `${sajuChart?.elementBalance?.[el] ?? 20}%`, backgroundColor: ELEMENT_COLORS[el] }} className="transition-all" />
                       ))}
                     </div>
                     <div className="flex justify-between mt-1">
                       {(["wood", "fire", "earth", "metal", "water"] as const).map((el) => (
-                        <span key={el} className="text-[9px]" style={{ color: ELEMENT_COLORS[el] }}>{ELEMENT_LABELS[el]} {sajuChart.elementBalance[el]}%</span>
+                        <span key={el} className="text-[9px]" style={{ color: ELEMENT_COLORS[el] }}>{ELEMENT_LABELS[el]} {sajuChart?.elementBalance?.[el] ?? 20}%</span>
                       ))}
                     </div>
                   </div>

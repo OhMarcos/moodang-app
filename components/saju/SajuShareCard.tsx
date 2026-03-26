@@ -131,30 +131,35 @@ function drawCard(ctx: CanvasRenderingContext2D, reading: SajuReading, name: str
   ctx.font = `bold 200px "Noto Serif KR", serif`;
   ctx.textAlign = "center";
   // Gradient fill via multiple overlapping draws
+  const hanja = reading?.destinyType?.hanja ?? "命";
+  const title = reading?.destinyType?.title ?? "";
+  const desc = reading?.destinyType?.description ?? "";
+
   ctx.fillStyle = C.purpleLight;
   ctx.globalAlpha = 0.15;
-  ctx.fillText(reading.destinyType.hanja, s / 2 + 3, s * 0.35 + 3);
+  ctx.fillText(hanja, s / 2 + 3, s * 0.35 + 3);
   ctx.globalAlpha = 1;
   const hanjaGrad = ctx.createLinearGradient(s * 0.3, s * 0.15, s * 0.7, s * 0.4);
   hanjaGrad.addColorStop(0, C.purpleLight);
   hanjaGrad.addColorStop(1, C.purple);
   ctx.fillStyle = hanjaGrad;
-  ctx.fillText(reading.destinyType.hanja, s / 2, s * 0.35);
+  ctx.fillText(hanja, s / 2, s * 0.35);
 
   // Destiny title
   ctx.font = `bold 34px "Noto Serif KR", serif`;
   ctx.fillStyle = C.ivory;
-  ctx.fillText(reading.destinyType.title, s / 2, s * 0.42);
+  ctx.fillText(title, s / 2, s * 0.42);
 
   // Description (truncated)
   ctx.font = `400 22px "Noto Serif KR", serif`;
   ctx.fillStyle = C.muted;
-  const desc = reading.destinyType.description;
   const maxDescLen = 40;
   ctx.fillText(desc.length > maxDescLen ? desc.slice(0, maxDescLen) + "..." : desc, s / 2, s * 0.46);
 
   // Grade badge
-  const gradeColor = GRADE_COLORS[reading.overallGrade.grade] ?? C.muted;
+  const grade = reading?.overallGrade?.grade ?? "C";
+  const nationalPercentile = reading?.overallGrade?.nationalPercentile ?? 50;
+  const gradeColor = GRADE_COLORS[grade] ?? C.muted;
   const gradeY = s * 0.52;
   roundRect(ctx, s / 2 - 100, gradeY - 24, 200, 48, 24);
   ctx.fillStyle = `${gradeColor}20`;
@@ -166,11 +171,11 @@ function drawCard(ctx: CanvasRenderingContext2D, reading: SajuReading, name: str
   ctx.font = `bold 28px "SF Mono", "Menlo", monospace`;
   ctx.fillStyle = gradeColor;
   ctx.textAlign = "center";
-  ctx.fillText(reading.overallGrade.grade, s / 2 - 30, gradeY + 8);
+  ctx.fillText(grade, s / 2 - 30, gradeY + 8);
 
   ctx.font = `500 18px "Noto Serif KR", serif`;
   ctx.fillStyle = C.ivory;
-  ctx.fillText(`상위 ${reading.overallGrade.nationalPercentile}%`, s / 2 + 40, gradeY + 6);
+  ctx.fillText(`상위 ${nationalPercentile}%`, s / 2 + 40, gradeY + 6);
 
   // Divider
   const divY = s * 0.58;
@@ -189,7 +194,7 @@ function drawCard(ctx: CanvasRenderingContext2D, reading: SajuReading, name: str
 
   for (let i = 0; i < FORTUNE_LABELS.length; i++) {
     const { key, label, emoji } = FORTUNE_LABELS[i];
-    const fortune = reading.fortunes[key as keyof typeof reading.fortunes];
+    const fortune = reading?.fortunes?.[key as keyof typeof reading.fortunes];
     const score = fortune?.score ?? 50;
     const y = barStartY + i * barGap;
 
@@ -225,9 +230,9 @@ function drawCard(ctx: CanvasRenderingContext2D, reading: SajuReading, name: str
 
   // Triple Convergence verdict
   const convY = barStartY + FORTUNE_LABELS.length * barGap + 8;
-  if (reading.quadConvergence) {
-    const verdictLabel = reading.quadConvergence.energyVerdictKr;
-    const agreement = reading.quadConvergence.agreementLevel;
+  if (reading?.quadConvergence) {
+    const verdictLabel = reading.quadConvergence?.energyVerdictKr ?? "";
+    const agreement = reading.quadConvergence?.agreementLevel ?? 0;
 
     // Verdict badge
     roundRect(ctx, s / 2 - 160, convY - 14, 320, 40, 20);
