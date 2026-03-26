@@ -140,7 +140,7 @@ export function buildSajuSystemPrompt(): string {
 
   "overallGrade": {
     "grade": "SSS/SS/S/A/B/C",
-    "nationalPercentile": 1-100,
+    "nationalPercentile": 1-100 (상위 X% 의미. 낮을수록 좋음. SSS=1-3, SS=3-5, S=5-15, A=15-30, B=30-50, C=50-100),
     "comment": "등급 해석 한 줄 (구체적, 인상적)"
   },
 
@@ -154,35 +154,35 @@ export function buildSajuSystemPrompt(): string {
   "fortunes": {
     "wealth": {
       "score": 1-100,
-      "percentile": 1-100,
+      "percentile": 1-100 (상위 X% 의미. 낮을수록 좋음. score 90+=상위 1-5, 80+=상위 5-15, 70+=상위 15-30, 60+=상위 30-50, 그 외=50-100),
       "summary": "재물운 한 줄 요약 (숫자 포함, 구체적)",
       "detail": "상세 재물운 해석 (3-4문장, 언제/어떻게 돈이 들어오는지)",
       "advice": "재물운 향상 실행 조언 (구체적 행동)"
     },
     "love": {
       "score": 1-100,
-      "percentile": 1-100,
+      "percentile": 1-100 (상위 X% 의미. 낮을수록 좋음),
       "summary": "연애/결혼운 한 줄 요약",
       "detail": "상세 연애운 해석 (3-4문장, 어떤 사람과 언제 만나는지)",
       "advice": "연애운 향상 실행 조언"
     },
     "career": {
       "score": 1-100,
-      "percentile": 1-100,
+      "percentile": 1-100 (상위 X% 의미. 낮을수록 좋음),
       "summary": "직업운 한 줄 요약",
       "detail": "상세 직업운 해석 (3-4문장, 적성 직업 포함)",
       "advice": "직업 관련 조언"
     },
     "health": {
       "score": 1-100,
-      "percentile": 1-100,
+      "percentile": 1-100 (상위 X% 의미. 낮을수록 좋음),
       "summary": "건강운 한 줄 요약",
       "detail": "상세 건강운 해석 (3-4문장, 취약 장기 포함)",
       "advice": "건강 관리 조언"
     },
     "fame": {
       "score": 1-100,
-      "percentile": 1-100,
+      "percentile": 1-100 (상위 X% 의미. 낮을수록 좋음),
       "summary": "명예운/인기운 한 줄 요약",
       "detail": "상세 명예운 해석 (3-4문장)",
       "advice": "명예운 향상 조언"

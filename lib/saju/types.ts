@@ -49,7 +49,7 @@ export interface DestinyType {
 export interface OverallGrade {
   /** SSS, SS, S, A, B, C */
   grade: string;
-  /** 전국 백분위 (상위 X%) */
+  /** 전국 백분위 — 상위 X% (낮을수록 좋음, 1=상위1%) */
   nationalPercentile: number;
   /** 등급 한 줄 해석 */
   comment: string;
