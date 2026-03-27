@@ -288,7 +288,7 @@ export default function SajuPage() {
           "Content-Type": "application/json",
           "x-session-id": getSessionId(),
         },
-        body: JSON.stringify(input),
+        body: JSON.stringify({ ...input, locale }),
         signal: controller.signal,
       });
 

@@ -4,6 +4,7 @@ import { ai, GEMINI_MODEL } from "@/lib/gwansang/gemini";
 import {
   GWANSANG_SYSTEM_PROMPT,
   GWANSANG_USER_PROMPT,
+  GWANSANG_LOCALE_INSTRUCTION,
 } from "@/lib/gwansang/gwansang-prompt";
 import { validateGwansangReading } from "@/lib/gwansang/validate";
 import { checkIpRateLimitAsync, checkDailyCap, hashIpSecure } from "@/lib/rate-limit";
@@ -54,6 +55,7 @@ export async function POST(request: NextRequest) {
 
     const imageBase64 = typeof body.imageBase64 === "string" ? body.imageBase64 : "";
     const rawMimeType = typeof body.mimeType === "string" ? body.mimeType : "image/jpeg";
+    const locale = body.locale === "en" ? "en" : "ko";
 
     if (!imageBase64) {
       return NextResponse.json(
@@ -101,7 +103,7 @@ export async function POST(request: NextRequest) {
                   data: imageBase64,
                 },
               },
-              { text: GWANSANG_USER_PROMPT },
+              { text: GWANSANG_USER_PROMPT + GWANSANG_LOCALE_INSTRUCTION(locale) },
             ],
           },
         ],

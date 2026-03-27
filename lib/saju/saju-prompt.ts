@@ -592,3 +592,20 @@ export function buildSajuUserPrompt(
 
   return lines.join("\n");
 }
+
+/**
+ * Locale instruction appended to user prompt.
+ * When locale is "en", instructs the AI to write ALL text values in English.
+ */
+export function buildSajuLocaleInstruction(locale: string): string {
+  if (locale !== "en") return "";
+  return `
+
+⚠️ CRITICAL LANGUAGE INSTRUCTION:
+The user's language is ENGLISH. You MUST write ALL text values in the JSON response in ENGLISH.
+This includes: destinyType (name, hanja can stay, but description in English), lifeNarrative, all fortune descriptions/summaries/details/advice, hiddenSelf, monthlyForecast descriptions, iching interpretation, vedic dasha interpretation, and any other text content.
+
+For Hanja characters (e.g., 甲木) keep the Chinese characters but add English meaning: e.g., "甲木 (Yang Wood)".
+For four pillars analysis, use English for the interpretation text while keeping the original pillar characters.
+Write naturally in English while preserving the depth and wisdom of traditional Eastern astrology. Do NOT simply translate Korean literally — express the concepts naturally in English.`;
+}

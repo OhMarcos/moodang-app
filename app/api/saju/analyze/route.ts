@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ai, GEMINI_MODEL } from "@/lib/saju/gemini";
-import { buildSajuSystemPrompt, buildSajuUserPrompt } from "@/lib/saju/saju-prompt";
+import { buildSajuSystemPrompt, buildSajuUserPrompt, buildSajuLocaleInstruction } from "@/lib/saju/saju-prompt";
 import type { SajuInput, SajuReading } from "@/lib/saju/types";
 import { validateSajuReading } from "@/lib/saju/validate";
 import { calculateAllSystems } from "@/lib/saju/calculators";
@@ -58,6 +58,7 @@ export async function POST(request: NextRequest) {
     const birthMinute = Number(body.birthMinute ?? 0);
     const gender = String(body.gender ?? "");
     const calendarType = String(body.calendarType ?? "solar");
+    const locale = body.locale === "en" ? "en" : "ko";
     const name = String(body.name ?? "");
     const birthPlace = body.birthPlace ? String(body.birthPlace) : undefined;
     const currentConcern = body.currentConcern ? String(body.currentConcern) : undefined;
@@ -182,7 +183,7 @@ export async function POST(request: NextRequest) {
     const yongShen = { primary: sajuChart.yongShen.primary, secondary: sajuChart.yongShen.secondary ?? null };
 
     // ─── Check cache first (same birth data → same reading) ───
-    const cacheKey = buildSajuCacheKey(input);
+    const cacheKey = buildSajuCacheKey(input) + `-${locale}`;
     const cachedResult = getSajuCache(cacheKey);
 
     if (cachedResult) {
@@ -201,7 +202,7 @@ export async function POST(request: NextRequest) {
     }
 
     const systemPrompt = buildSajuSystemPrompt();
-    const userPrompt = buildSajuUserPrompt(input, preComputed);
+    const userPrompt = buildSajuUserPrompt(input, preComputed) + buildSajuLocaleInstruction(locale);
 
     // Retry loop: Gemini may occasionally return invalid JSON
     const MAX_RETRIES = 2;

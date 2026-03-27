@@ -64,6 +64,7 @@ export default function GwansangPage() {
         body: JSON.stringify({
           imageBase64: state.imageData,
           mimeType: previewUrl.match(/^data:([^;]+);/)?.[1] ?? "image/jpeg",
+          locale,
         }),
         signal: controller.signal,
       });
