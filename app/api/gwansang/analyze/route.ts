@@ -2,9 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { validateEnv } from "@/lib/env";
 import { ai, GEMINI_MODEL } from "@/lib/gwansang/gemini";
 import {
-  GWANSANG_SYSTEM_PROMPT,
-  GWANSANG_USER_PROMPT,
-  GWANSANG_LOCALE_INSTRUCTION,
+  buildGwansangSystemPrompt,
+  getGwansangUserPrompt,
 } from "@/lib/gwansang/gwansang-prompt";
 import { validateGwansangReading } from "@/lib/gwansang/validate";
 import { checkIpRateLimitAsync, checkDailyCap, hashIpSecure } from "@/lib/rate-limit";
@@ -103,12 +102,12 @@ export async function POST(request: NextRequest) {
                   data: imageBase64,
                 },
               },
-              { text: GWANSANG_USER_PROMPT + GWANSANG_LOCALE_INSTRUCTION(locale) },
+              { text: getGwansangUserPrompt(locale) },
             ],
           },
         ],
         config: {
-          systemInstruction: GWANSANG_SYSTEM_PROMPT,
+          systemInstruction: buildGwansangSystemPrompt(locale),
           temperature: attempt === 0 ? 0.7 : 0.4,
           maxOutputTokens: 16384,
           responseMimeType: "application/json",

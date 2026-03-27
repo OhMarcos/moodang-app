@@ -201,7 +201,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const systemPrompt = buildSajuSystemPrompt();
+    const systemPrompt = buildSajuSystemPrompt(locale);
     const userPrompt = buildSajuUserPrompt(input, preComputed) + buildSajuLocaleInstruction(locale);
 
     // Retry loop: Gemini may occasionally return invalid JSON

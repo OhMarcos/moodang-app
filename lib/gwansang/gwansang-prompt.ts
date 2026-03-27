@@ -8,7 +8,7 @@
  * - Fortune interpretation frameworks
  */
 
-export const GWANSANG_SYSTEM_PROMPT = `당신은 한국 전통 관상학(觀相學)의 대가입니다. 조선시대 관상학의 정수를 계승한 전문가로서, 얼굴 사진을 보고 전통 관상학 이론에 기반한 상세하고 깊이 있는 분석을 제공합니다.
+export const GWANSANG_SYSTEM_PROMPT_BASE = `당신은 한국 전통 관상학(觀相學)의 대가입니다. 조선시대 관상학의 정수를 계승한 전문가로서, 얼굴 사진을 보고 전통 관상학 이론에 기반한 상세하고 깊이 있는 분석을 제공합니다.
 
 ## 핵심 관상학 프레임워크
 
@@ -287,7 +287,44 @@ export const GWANSANG_SYSTEM_PROMPT = `당신은 한국 전통 관상학(觀相�
   }
 }`;
 
-export const GWANSANG_USER_PROMPT = `이 얼굴 사진을 전통 한국 관상학(觀相學)의 관점에서 심도 있게 분석해주세요.
+/**
+ * Build the full system prompt, optionally with English output instruction.
+ */
+export function buildGwansangSystemPrompt(locale: string): string {
+  if (locale !== "en") return GWANSANG_SYSTEM_PROMPT_BASE;
+  return GWANSANG_SYSTEM_PROMPT_BASE + `
+
+## ⚠️ MANDATORY OUTPUT LANGUAGE: ENGLISH ⚠️
+
+You MUST write ALL text values in the JSON response in **ENGLISH**.
+The knowledge base above is in Korean for your reference only — your OUTPUT must be entirely in English.
+Every single string value in the JSON must be in English. No Korean text in the output.
+
+Specifically:
+- overallImpression → English
+- faceShape → English (e.g., "Oval face — balanced proportions suggesting...")
+- features.*.type → English (e.g., "Wide, rounded forehead")
+- features.*.description → English
+- fortunes.*.summary → English
+- fortunes.*.detail → English
+- fortunes.*.advice → English
+- lifeAdvice → English
+- luckyElements.color → English (e.g., "Gold", "Navy Blue")
+- luckyElements.direction → English (e.g., "Southeast", "North")
+- viralScores → numbers only (no change needed)
+- funTags.nickname → Fun English format like "The face of a born charmer!" (NOT Korean "~의 상이로구나")
+- funTags.charmDescription → English
+- funTags.hiddenCharm → English
+- funTags.romanticFortune → English
+- funTags.pastLifeJob → English (e.g., "Royal Court Painter — your artistic eyes...")
+- funTags.hiddenTalent → English
+- harshTruths.truths[] → English
+- harshTruths.warning → English
+
+Write naturally in English. Do NOT translate Korean literally. Express the traditional wisdom in engaging, natural English.`;
+}
+
+export const GWANSANG_USER_PROMPT_KO = `이 얼굴 사진을 전통 한국 관상학(觀相學)의 관점에서 심도 있게 분석해주세요.
 
 12궁, 삼정, 오악, 오관 체계를 모두 활용하여 각 이목구비의 특징을 파악하고, 그에 따른 성격과 운세를 해석해주세요.
 
@@ -295,22 +332,16 @@ export const GWANSANG_USER_PROMPT = `이 얼굴 사진을 전통 한국 관상�
 
 반드시 지정된 JSON 형식으로만 응답해주세요.`;
 
-/**
- * Locale instruction appended to user prompt.
- * When locale is "en", instructs the AI to write ALL text values in English.
- * The system prompt knowledge base stays Korean (AI understands it) but output language changes.
- */
-export function GWANSANG_LOCALE_INSTRUCTION(locale: string): string {
-  if (locale !== "en") return "";
-  return `
+export const GWANSANG_USER_PROMPT_EN = `Analyze this face photo using traditional Korean physiognomy (관상학/觀相學).
 
-⚠️ CRITICAL LANGUAGE INSTRUCTION:
-The user's language is ENGLISH. You MUST write ALL text values in the JSON response in ENGLISH.
-This includes: overallImpression, faceShape, all feature types and descriptions, all fortune summaries/details/advice, lifeAdvice, luckyElements (color, direction), funTags (charmDescription, hiddenCharm, romanticFortune, pastLifeJob, nickname, hiddenTalent), and harshTruths (truths[], warning).
+Use all frameworks: 12 Palaces (12궁), Three Courts (삼정), Five Mountains (오악), Five Features (오관) to identify facial characteristics and interpret personality and fortune.
 
-For the nickname field, use a fun English format like: "The face of a [description]!" instead of the Korean "~의 상이로구나" format.
-For pastLifeJob, describe what role they would have had in ancient Korea but write the description in English.
-For luckyElements.color and direction, use English words (e.g., "Gold", "Southeast").
+Even if ears are not fully visible, analyze what you can see and supplement with other features.
 
-Keep the same depth, humor, and cultural richness of Korean physiognomy, but expressed naturally in English. Do NOT simply translate Korean phrases literally — write naturally in English while preserving the traditional wisdom.`;
+IMPORTANT: Write your ENTIRE response in ENGLISH. All text values in the JSON must be in English. No Korean.
+
+Respond ONLY in the specified JSON format.`;
+
+export function getGwansangUserPrompt(locale: string): string {
+  return locale === "en" ? GWANSANG_USER_PROMPT_EN : GWANSANG_USER_PROMPT_KO;
 }

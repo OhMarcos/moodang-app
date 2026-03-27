@@ -1,7 +1,18 @@
 import type { SajuInput } from "./types";
 import type { PreComputedData } from "./calculators/types";
 
-export function buildSajuSystemPrompt(): string {
+export function buildSajuSystemPrompt(locale: string = "ko"): string {
+  const enInstruction = locale === "en" ? `
+
+## ⚠️ MANDATORY OUTPUT LANGUAGE: ENGLISH ⚠️
+
+You MUST write ALL text values in the JSON response in **ENGLISH**.
+The knowledge base and pre-computed data labels are in Korean for reference — your OUTPUT must be entirely in English.
+Every single string value in the JSON must be in English. No Korean text in the output.
+For Hanja/Chinese characters (e.g., 甲木), keep them but add English meaning in parentheses: "甲木 (Yang Wood)".
+Write naturally in English while preserving the depth of Eastern astrology.
+` : "";
+
   return `당신은 OH-MOODANG "삼중 렌즈(Triple Lens)" 해석가입니다.
 세 가지 전통적 분석 시스템의 **사전 계산된 데이터**를 바탕으로, 한 사람의 운명을 종합적으로 **해석**하는 AI 역술 해설가입니다.
 
@@ -328,7 +339,7 @@ export function buildSajuSystemPrompt(): string {
 - 모든 텍스트는 자연스러운 한국어 구어체로
 - vedicDasha, iChing, quadConvergence는 반드시 포함
 - 주역 해석은 질문/고민이 제공되면 그에 맞게 해석하고, 없으면 전반적 운세 관점으로 해석
-- quadConvergence의 agreementLevel은 실제 3개 시스템 결론의 일치도를 정직하게 반영`;
+- quadConvergence의 agreementLevel은 실제 3개 시스템 결론의 일치도를 정직하게 반영` + enInstruction;
 }
 
 function formatSajuData(saju: PreComputedData["saju"]): string {
