@@ -26,31 +26,38 @@ export async function generateMetadata({
   const fortuneGrade = reading?.fortune_grade;
   const destinyHanja = reading?.destiny_type_hanja;
 
-  const label = type === "gwansang" ? "AI 관상 결과" : "사주팔자 결과";
-  const gradeLabel = fortuneGrade ? ` [${fortuneGrade}등급]` : "";
+  const label = type === "gwansang" ? "AI Face Reading Result" : "Destiny Analysis Result";
+  const labelKo = type === "gwansang" ? "AI 관상 결과" : "사주팔자 결과";
+  const gradeLabel = fortuneGrade ? ` [${fortuneGrade}]` : "";
   const hanjaLabel = destinyHanja ? ` ${destinyHanja}` : "";
   const displayTitle = sp.nickname
     ? `"${sp.nickname}" — ${label}${gradeLabel}${hanjaLabel}`
     : `${label}${gradeLabel}${hanjaLabel}`;
+  const displayTitleKo = sp.nickname
+    ? `"${sp.nickname}" — ${labelKo}${gradeLabel}${hanjaLabel}`
+    : `${labelKo}${gradeLabel}${hanjaLabel}`;
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://moodang.app";
-  const ogUrl = `${baseUrl}/api/og/${id}?type=${type}&title=${encodeURIComponent(sp.title ?? displayTitle)}&nickname=${encodeURIComponent(sp.nickname ?? "")}`;
+  const ogUrl = `${baseUrl}/api/og/${id}?type=${type}&title=${encodeURIComponent(sp.title ?? displayTitleKo)}&nickname=${encodeURIComponent(sp.nickname ?? "")}`;
+
+  const description = "Try AI Face Reading & Destiny Analysis — moodang.app";
 
   return {
-    title: `${displayTitle} | 무당 MOODANG`,
-    description: "나도 관상/사주 분석 받아보기 — moodang.app",
+    title: `${displayTitle} | MOODANG`,
+    description,
     openGraph: {
       title: displayTitle,
-      description: "나도 관상/사주 분석 받아보기",
+      description,
       images: [{ url: ogUrl, width: 1200, height: 630 }],
       type: "website",
-      locale: "ko_KR",
+      locale: "en_US",
+      alternateLocale: "ko_KR",
       siteName: "MOODANG",
     },
     twitter: {
       card: "summary_large_image",
       title: displayTitle,
-      description: "나도 관상/사주 분석 받아보기",
+      description,
       images: [ogUrl],
     },
   };

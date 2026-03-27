@@ -94,10 +94,12 @@ function FortuneRow({
   icon,
   title,
   fortune,
+  topLabel,
 }: {
   icon: string;
   title: string;
   fortune: FortuneCategory;
+  topLabel: string;
 }) {
   return (
     <div className="p-4 rounded-xl bg-[var(--color-bg-card)] border border-[var(--color-border)]">
@@ -108,7 +110,7 @@ function FortuneRow({
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-[var(--color-text-muted)]">
-            상위 {fortune.percentile}%
+            {topLabel} {fortune.percentile}%
           </span>
           <span className="text-lg font-bold text-[var(--color-mystic-purple-light)] font-mono">
             {fortune.score}
@@ -126,7 +128,7 @@ function FortuneRow({
   );
 }
 
-function EventCard({ event }: { event: DestinyEvent }) {
+function EventCard({ event, monthSuffix }: { event: DestinyEvent; monthSuffix: string }) {
   const sentimentColor =
     event.sentiment === "positive"
       ? "text-[#22c55e]"
@@ -144,7 +146,7 @@ function EventCard({ event }: { event: DestinyEvent }) {
     <div className={`p-4 rounded-xl border ${sentimentBg}`}>
       <div className="flex items-center gap-2 mb-2">
         <span className="px-2 py-0.5 text-xs rounded-full bg-[var(--color-mystic-purple)]/10 text-[var(--color-mystic-purple-light)] font-semibold">
-          {event.month}월
+          {monthSuffix ? `${event.month}${monthSuffix}` : `M${event.month}`}
         </span>
         <span className="text-xs text-[var(--color-text-muted)]">{event.category}</span>
       </div>
@@ -156,10 +158,10 @@ function EventCard({ event }: { event: DestinyEvent }) {
   );
 }
 
-function MonthCell({ m }: { m: MonthlyFortune }) {
+function MonthCell({ m, monthSuffix }: { m: MonthlyFortune; monthSuffix: string }) {
   return (
     <div className="p-2.5 rounded-lg bg-[var(--color-bg-base)] text-center">
-      <span className="text-xs text-[var(--color-text-muted)]">{m.month}월</span>
+      <span className="text-xs text-[var(--color-text-muted)]">{monthSuffix ? `${m.month}${monthSuffix}` : `M${m.month}`}</span>
       <p className="text-xs font-semibold text-[var(--color-text-primary)] mt-0.5">
         {m.keyword}
       </p>
@@ -293,7 +295,7 @@ export default function SajuPage() {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        let errorMsg = "분석에 실패했습니다.";
+        let errorMsg = t("saju.error.analysisFailed");
         try {
           const data = await response.json();
           errorMsg = data.error ?? errorMsg;
@@ -317,9 +319,9 @@ export default function SajuPage() {
       setState({ status: "complete", input, reading: data.reading, error: null });
     } catch (err) {
       clearTimeout(timeoutId);
-      let errorMsg = "알 수 없는 오류가 발생했습니다.";
+      let errorMsg = t("saju.error.unknown");
       if (err instanceof DOMException && err.name === "AbortError") {
-        errorMsg = "분석 시간이 초과되었습니다. 다시 시도해주세요.";
+        errorMsg = t("saju.error.timeout");
       } else if (err instanceof Error) {
         errorMsg = err.message;
       }
@@ -560,7 +562,7 @@ export default function SajuPage() {
         {state.status === "complete" && r && (
           <div className="space-y-5 animate-fade-in-up">
             {/* Destiny Card (shareable image) */}
-            <SajuShareCard ref={cardRef} reading={r} name={state.input?.name ?? ""} />
+            <SajuShareCard ref={cardRef} reading={r} name={state.input?.name ?? ""} locale={locale} />
 
             {/* Share Buttons */}
             <ShareButtons
@@ -616,11 +618,11 @@ export default function SajuPage() {
               <h3 className="font-semibold text-sm text-[var(--color-text-primary)]">
                 {t("saju.result.energyAnalysis")}
               </h3>
-              <FortuneRow icon="💕" title={t("saju.result.fortune.love")} fortune={r.fortunes.love} />
-              <FortuneRow icon="💰" title={t("saju.result.fortune.wealth")} fortune={r.fortunes.wealth} />
-              <FortuneRow icon="🎯" title={t("saju.result.fortune.career")} fortune={r.fortunes.career} />
-              <FortuneRow icon="⚡" title={t("saju.result.fortune.health")} fortune={r.fortunes.health} />
-              <FortuneRow icon="👑" title={t("saju.result.fortune.fame")} fortune={r.fortunes.fame} />
+              <FortuneRow icon="💕" title={t("saju.result.fortune.love")} fortune={r.fortunes.love} topLabel={t("common.top")} />
+              <FortuneRow icon="💰" title={t("saju.result.fortune.wealth")} fortune={r.fortunes.wealth} topLabel={t("common.top")} />
+              <FortuneRow icon="🎯" title={t("saju.result.fortune.career")} fortune={r.fortunes.career} topLabel={t("common.top")} />
+              <FortuneRow icon="⚡" title={t("saju.result.fortune.health")} fortune={r.fortunes.health} topLabel={t("common.top")} />
+              <FortuneRow icon="👑" title={t("saju.result.fortune.fame")} fortune={r.fortunes.fame} topLabel={t("common.top")} />
             </section>
 
             {/* ═══ 만세력 — Full Saju Chart ═══ */}
@@ -662,7 +664,7 @@ export default function SajuPage() {
                           <p className="text-2xl font-bold font-[family-name:var(--font-serif)]" style={{ color: stemElementColor[p?.stem ?? ""] ?? "inherit" }}>{p?.stem ?? "?"}</p>
                           <p className="text-[10px] text-[var(--color-text-muted)]">{p?.stemKr ?? "?"}</p>
                           <p className="text-[10px] mt-0.5" style={{ color: isDayMaster ? "var(--color-mystic-purple-light)" : "var(--color-text-secondary)" }}>
-                            {isDayMaster ? "일주" : tg?.stem?.tenGod?.korean ?? ""}
+                            {isDayMaster ? t("saju.chart.dayMasterTag") : tg?.stem?.tenGod?.korean ?? ""}
                           </p>
                         </div>
                       );
@@ -684,7 +686,7 @@ export default function SajuPage() {
                     })}
 
                     {/* 지장간 row (hidden stems) */}
-                    <div className="flex items-center justify-center text-[10px] text-[var(--color-text-muted)]">지장간</div>
+                    <div className="flex items-center justify-center text-[10px] text-[var(--color-text-muted)]">{t("saju.chart.hiddenStems")}</div>
                     {positions.map((pos) => {
                       const tg = sajuChart?.tenGods?.[pos];
                       return (
@@ -730,19 +732,19 @@ export default function SajuPage() {
                   {/* Strength + YongShen + Element Balance */}
                   <div className="grid grid-cols-3 gap-2 mt-4">
                     <div className="p-2 rounded-lg bg-[var(--color-bg-base)] text-center">
-                      <p className="text-[10px] text-[var(--color-text-muted)]">신강/신약</p>
+                      <p className="text-[10px] text-[var(--color-text-muted)]">{t("saju.chart.strengthLabel")}</p>
                       <p className="text-sm font-bold text-[var(--color-text-primary)]">{sajuChart?.strength?.levelKr ?? "-"}</p>
-                      <p className="text-[10px] text-[var(--color-text-muted)]">{sajuChart?.strength?.score ?? 0}점</p>
+                      <p className="text-[10px] text-[var(--color-text-muted)]">{sajuChart?.strength?.score ?? 0}{t("common.points")}</p>
                     </div>
                     <div className="p-2 rounded-lg bg-[var(--color-bg-base)] text-center">
-                      <p className="text-[10px] text-[var(--color-text-muted)]">용신</p>
+                      <p className="text-[10px] text-[var(--color-text-muted)]">{t("saju.chart.yongShen")}</p>
                       <p className="text-sm font-bold text-[var(--color-sacred-gold)]">{sajuChart?.yongShen?.primary?.korean ?? ""}</p>
                       {sajuChart?.yongShen?.secondary && (
-                        <p className="text-[10px] text-[var(--color-text-muted)]">보: {sajuChart.yongShen.secondary?.korean ?? ""}</p>
+                        <p className="text-[10px] text-[var(--color-text-muted)]">{t("saju.chart.yongShenSub")}: {sajuChart.yongShen.secondary?.korean ?? ""}</p>
                       )}
                     </div>
                     <div className="p-2 rounded-lg bg-[var(--color-bg-base)] text-center">
-                      <p className="text-[10px] text-[var(--color-text-muted)]">일간</p>
+                      <p className="text-[10px] text-[var(--color-text-muted)]">{t("saju.chart.dayMasterLabel")}</p>
                       <p className="text-sm font-bold" style={{ color: stemElementColor[sajuChart?.dayMaster?.stem ?? ""] ?? "inherit" }}>
                         {sajuChart?.dayMaster?.stem ?? ""} {sajuChart?.dayMaster?.stemKr ?? ""}
                       </p>
@@ -775,10 +777,10 @@ export default function SajuPage() {
                 </h3>
                 <div className="space-y-4">
                   {[
-                    { label: "년주", icon: "🌳", data: r.fourPillarsAnalysis.yearPillar },
-                    { label: "월주", icon: "🌙", data: r.fourPillarsAnalysis.monthPillar },
-                    { label: "일주", icon: "☀️", data: r.fourPillarsAnalysis.dayPillar },
-                    { label: "시주", icon: "⭐", data: r.fourPillarsAnalysis.hourPillar },
+                    { label: t("saju.fourPillars.yearPillar"), icon: "🌳", data: r.fourPillarsAnalysis.yearPillar },
+                    { label: t("saju.fourPillars.monthPillar"), icon: "🌙", data: r.fourPillarsAnalysis.monthPillar },
+                    { label: t("saju.fourPillars.dayPillar"), icon: "☀️", data: r.fourPillarsAnalysis.dayPillar },
+                    { label: t("saju.fourPillars.hourPillar"), icon: "⭐", data: r.fourPillarsAnalysis.hourPillar },
                   ].map((item) => (
                     <div key={item.label} className="p-3 rounded-lg bg-[var(--color-bg-base)]">
                       <div className="flex items-center gap-2 mb-1">
@@ -1020,7 +1022,7 @@ export default function SajuPage() {
                     {t("saju.yearly.events")}
                   </p>
                   {r.yearlyFortune?.destinyEvents.map((evt, i) => (
-                    <EventCard key={i} event={evt} />
+                    <EventCard key={i} event={evt} monthSuffix={t("common.month")} />
                   ))}
                 </div>
               )}
@@ -1034,7 +1036,7 @@ export default function SajuPage() {
                 </h3>
                 <div className="grid grid-cols-3 gap-2">
                   {r.monthlyFortunes.map((m) => (
-                    <MonthCell key={m.month} m={m} />
+                    <MonthCell key={m.month} m={m} monthSuffix={t("common.month")} />
                   ))}
                 </div>
               </section>
@@ -1139,7 +1141,7 @@ export default function SajuPage() {
                     {r.iChing.hexagramName}
                   </p>
                   <p className="text-sm text-[var(--color-text-muted)]">
-                    {r.iChing.hexagramHanja} (제{r.iChing.hexagramNumber}괘)
+                    {r.iChing.hexagramHanja} ({locale === "ko" ? `제${r.iChing.hexagramNumber}괘` : `#${r.iChing.hexagramNumber}`})
                   </p>
                 </div>
                 <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed mb-3">

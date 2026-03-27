@@ -2,10 +2,12 @@
 
 import { useRef, useEffect, useState } from "react";
 import type { GwansangReading } from "@/lib/gwansang/types";
+import type { Locale } from "@/lib/i18n/translations";
 
 interface FaceDiagramProps {
   imageUrl: string;
   reading: GwansangReading;
+  locale: Locale;
 }
 
 /** Standard face proportion ratios */
@@ -17,37 +19,75 @@ const FACE = {
 };
 
 /** 12궁 positions relative to face bounding box */
-const TWELVE_PALACES = [
-  { id: "명궁", x: 0.5, y: 0.36, desc: "命宮" },
-  { id: "관록궁", x: 0.5, y: 0.2, desc: "官祿" },
-  { id: "복덕궁", x: 0.5, y: 0.1, desc: "福德" },
-  { id: "형제궁", x: 0.35, y: 0.33, desc: "兄弟" },
-  { id: "전택궁", x: 0.35, y: 0.4, desc: "田宅" },
-  { id: "처첩궁", x: 0.72, y: 0.42, desc: "妻妾" },
-  { id: "재백궁", x: 0.5, y: 0.52, desc: "財帛" },
-  { id: "질액궁", x: 0.5, y: 0.44, desc: "疾厄" },
-  { id: "천이궁", x: 0.18, y: 0.22, desc: "遷移" },
-  { id: "남녀궁", x: 0.38, y: 0.5, desc: "男女" },
-  { id: "노복궁", x: 0.5, y: 0.82, desc: "奴僕" },
-  { id: "상모궁", x: 0.12, y: 0.42, desc: "相貌" },
-];
+const TWELVE_PALACES: Record<Locale, { id: string; x: number; y: number; desc: string }[]> = {
+  ko: [
+    { id: "명궁", x: 0.5, y: 0.36, desc: "命宮" },
+    { id: "관록궁", x: 0.5, y: 0.2, desc: "官祿" },
+    { id: "복덕궁", x: 0.5, y: 0.1, desc: "福德" },
+    { id: "형제궁", x: 0.35, y: 0.33, desc: "兄弟" },
+    { id: "전택궁", x: 0.35, y: 0.4, desc: "田宅" },
+    { id: "처첩궁", x: 0.72, y: 0.42, desc: "妻妾" },
+    { id: "재백궁", x: 0.5, y: 0.52, desc: "財帛" },
+    { id: "질액궁", x: 0.5, y: 0.44, desc: "疾厄" },
+    { id: "천이궁", x: 0.18, y: 0.22, desc: "遷移" },
+    { id: "남녀궁", x: 0.38, y: 0.5, desc: "男女" },
+    { id: "노복궁", x: 0.5, y: 0.82, desc: "奴僕" },
+    { id: "상모궁", x: 0.12, y: 0.42, desc: "相貌" },
+  ],
+  en: [
+    { id: "Life", x: 0.5, y: 0.36, desc: "命宮" },
+    { id: "Career", x: 0.5, y: 0.2, desc: "官祿" },
+    { id: "Fortune", x: 0.5, y: 0.1, desc: "福德" },
+    { id: "Sibling", x: 0.35, y: 0.33, desc: "兄弟" },
+    { id: "Estate", x: 0.35, y: 0.4, desc: "田宅" },
+    { id: "Spouse", x: 0.72, y: 0.42, desc: "妻妾" },
+    { id: "Wealth", x: 0.5, y: 0.52, desc: "財帛" },
+    { id: "Health", x: 0.5, y: 0.44, desc: "疾厄" },
+    { id: "Travel", x: 0.18, y: 0.22, desc: "遷移" },
+    { id: "Children", x: 0.38, y: 0.5, desc: "男女" },
+    { id: "Servant", x: 0.5, y: 0.82, desc: "奴僕" },
+    { id: "Looks", x: 0.12, y: 0.42, desc: "相貌" },
+  ],
+};
 
 /** 삼정 horizontal division lines */
-const THREE_COURTS = [
-  { y: 0.05, label: "상정(上停)" },
-  { y: 0.32, label: "중정(中停)" },
-  { y: 0.62, label: "하정(下停)" },
-  { y: 0.95, label: "" },
-];
+const THREE_COURTS: Record<Locale, { y: number; label: string }[]> = {
+  ko: [
+    { y: 0.05, label: "상정(上停)" },
+    { y: 0.32, label: "중정(中停)" },
+    { y: 0.62, label: "하정(下停)" },
+    { y: 0.95, label: "" },
+  ],
+  en: [
+    { y: 0.05, label: "Upper" },
+    { y: 0.32, label: "Middle" },
+    { y: 0.62, label: "Lower" },
+    { y: 0.95, label: "" },
+  ],
+};
 
 /** 오관 feature labels */
-const FIVE_FEATURES = [
-  { id: "보수관", x: 0.65, y: 0.33, desc: "눈썹" },
-  { id: "감찰관", x: 0.65, y: 0.4, desc: "눈" },
-  { id: "심판관", x: 0.62, y: 0.52, desc: "코" },
-  { id: "출납관", x: 0.62, y: 0.68, desc: "입" },
-  { id: "채청관", x: 0.88, y: 0.42, desc: "귀" },
-];
+const FIVE_FEATURES: Record<Locale, { id: string; x: number; y: number; desc: string }[]> = {
+  ko: [
+    { id: "보수관", x: 0.65, y: 0.33, desc: "눈썹" },
+    { id: "감찰관", x: 0.65, y: 0.4, desc: "눈" },
+    { id: "심판관", x: 0.62, y: 0.52, desc: "코" },
+    { id: "출납관", x: 0.62, y: 0.68, desc: "입" },
+    { id: "채청관", x: 0.88, y: 0.42, desc: "귀" },
+  ],
+  en: [
+    { id: "Brow", x: 0.65, y: 0.33, desc: "Eyebrow" },
+    { id: "Eye", x: 0.65, y: 0.4, desc: "Eye" },
+    { id: "Nose", x: 0.62, y: 0.52, desc: "Nose" },
+    { id: "Mouth", x: 0.62, y: 0.68, desc: "Mouth" },
+    { id: "Ear", x: 0.88, y: 0.42, desc: "Ear" },
+  ],
+};
+
+const SCORE_LABELS: Record<Locale, string[]> = {
+  ko: ["재물", "애정", "직업", "건강", "관계"],
+  en: ["Wealth", "Love", "Career", "Health", "Social"],
+};
 
 function drawRoundedRect(
   ctx: CanvasRenderingContext2D,
@@ -157,7 +197,12 @@ function applyTraditionalFilter(ctx: CanvasRenderingContext2D, size: number) {
   ctx.restore();
 }
 
-export default function FaceDiagram({ imageUrl, reading }: FaceDiagramProps) {
+export default function FaceDiagram({ imageUrl, reading, locale }: FaceDiagramProps) {
+  const isEn = locale === "en";
+  const palaces = TWELVE_PALACES[locale];
+  const courts = THREE_COURTS[locale];
+  const features = FIVE_FEATURES[locale];
+  const scoreLabels = SCORE_LABELS[locale];
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isReady, setIsReady] = useState(false);
 
@@ -202,8 +247,8 @@ export default function FaceDiagram({ imageUrl, reading }: FaceDiagramProps) {
       ctx.save();
       ctx.strokeStyle = "rgba(201, 168, 76, 0.4)";
       ctx.lineWidth = 1;
-      for (let i = 0; i < THREE_COURTS.length; i++) {
-        const court = THREE_COURTS[i];
+      for (let i = 0; i < courts.length; i++) {
+        const court = courts[i];
         const y = faceY + court.y * faceH;
         ctx.setLineDash([6, 3]);
         ctx.beginPath();
@@ -234,7 +279,7 @@ export default function FaceDiagram({ imageUrl, reading }: FaceDiagramProps) {
 
       // 12궁 markers
       ctx.save();
-      for (const palace of TWELVE_PALACES) {
+      for (const palace of palaces) {
         const px = faceX + palace.x * faceW;
         const py = faceY + palace.y * faceH;
 
@@ -273,7 +318,7 @@ export default function FaceDiagram({ imageUrl, reading }: FaceDiagramProps) {
 
       // 오관 labels (right side)
       ctx.save();
-      for (const feat of FIVE_FEATURES) {
+      for (const feat of features) {
         const fx = faceX + feat.x * faceW;
         const fy = faceY + feat.y * faceH;
 
@@ -302,7 +347,7 @@ export default function FaceDiagram({ imageUrl, reading }: FaceDiagramProps) {
 
       // Face shape label (top)
       ctx.save();
-      const shapeLabel = `얼굴형: ${reading.faceShape.split(" ")[0]}`;
+      const shapeLabel = isEn ? `Face: ${reading.faceShape.split(" ")[0]}` : `얼굴형: ${reading.faceShape.split(" ")[0]}`;
       ctx.font = "bold 12px 'Noto Serif KR', serif";
       const shapeTW = ctx.measureText(shapeLabel).width;
       const shapeX = canvasSize / 2 - shapeTW / 2 - 8;
@@ -324,11 +369,11 @@ export default function FaceDiagram({ imageUrl, reading }: FaceDiagramProps) {
       // Score summary badges (bottom)
       ctx.save();
       const scores = [
-        { label: "재물", score: reading.fortunes.wealth.score },
-        { label: "애정", score: reading.fortunes.love.score },
-        { label: "직업", score: reading.fortunes.career.score },
-        { label: "건강", score: reading.fortunes.health.score },
-        { label: "관계", score: reading.fortunes.relationships.score },
+        { label: scoreLabels[0], score: reading.fortunes.wealth.score },
+        { label: scoreLabels[1], score: reading.fortunes.love.score },
+        { label: scoreLabels[2], score: reading.fortunes.career.score },
+        { label: scoreLabels[3], score: reading.fortunes.health.score },
+        { label: scoreLabels[4], score: reading.fortunes.relationships.score },
       ];
 
       const badgeTotalW = scores.length * 56 + (scores.length - 1) * 6;
@@ -370,14 +415,14 @@ export default function FaceDiagram({ imageUrl, reading }: FaceDiagramProps) {
       ctx.font = "10px sans-serif";
       ctx.fillStyle = "rgba(201, 168, 76, 0.3)";
       ctx.textAlign = "right";
-      ctx.fillText("AI 관상 분석", canvasSize - 10, canvasSize - 6);
+      ctx.fillText(isEn ? "AI Face Reading" : "AI 관상 분석", canvasSize - 10, canvasSize - 6);
       ctx.restore();
 
       setIsReady(true);
     };
 
     img.src = imageUrl;
-  }, [imageUrl, reading]);
+  }, [imageUrl, reading, locale, isEn, palaces, courts, features, scoreLabels]);
 
   return (
     <div className="relative w-full max-w-md mx-auto">
@@ -388,7 +433,7 @@ export default function FaceDiagram({ imageUrl, reading }: FaceDiagramProps) {
       {!isReady && (
         <div className="absolute inset-0 flex items-center justify-center bg-[var(--color-bg-card)] rounded-xl">
           <p className="text-sm text-[var(--color-text-secondary)] animate-pulse-gold">
-            분석 이미지 생성 중...
+            {isEn ? "Generating analysis..." : "분석 이미지 생성 중..."}
           </p>
         </div>
       )}

@@ -51,7 +51,7 @@ export default function ReadingResult({
   onReset,
   readingId,
 }: ReadingResultProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const cardRef = useRef<CardHandle>(null);
 
   const canvasRef = {
@@ -67,7 +67,7 @@ export default function ReadingResult({
         <h2 className="font-[family-name:var(--font-serif)] text-xl font-bold text-[var(--color-gold)] mb-4 text-center">
           {t("gwansang.result.title")}
         </h2>
-        <FaceAnalysisOverlay ref={cardRef} imageUrl={imageUrl} reading={reading} />
+        <FaceAnalysisOverlay ref={cardRef} imageUrl={imageUrl} reading={reading} locale={locale} />
       </div>
 
       {/* 2. Share Buttons (for Pokemon card) */}
@@ -292,7 +292,7 @@ export default function ReadingResult({
         <p className="text-xs text-[var(--color-text-muted)] mb-3 text-center">
           {t("gwansang.result.faceDiagram.desc")}
         </p>
-        <FaceDiagram imageUrl={imageUrl} reading={reading} />
+        <FaceDiagram imageUrl={imageUrl} reading={reading} locale={locale} />
       </div>
 
       {/* 8. Lucky Elements */}

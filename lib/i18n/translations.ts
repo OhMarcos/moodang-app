@@ -404,6 +404,54 @@ export const translations = {
   // ─── Common ───
   "common.result": { ko: "결과", en: "Results" },
   "common.advice": { ko: "조언", en: "Advice" },
+  "common.top": { ko: "상위", en: "Top" },
+  "common.month": { ko: "월", en: "" },
+  "common.points": { ko: "점", en: "pts" },
+
+  // ─── Saju Page: Inline ───
+  "saju.error.analysisFailed": { ko: "분석에 실패했습니다.", en: "Analysis failed." },
+  "saju.error.unknown": { ko: "알 수 없는 오류가 발생했습니다.", en: "An unknown error occurred." },
+  "saju.error.timeout": { ko: "분석 시간이 초과되었습니다. 다시 시도해주세요.", en: "Analysis timed out. Please try again." },
+  "saju.chart.hiddenStems": { ko: "지장간", en: "Hidden" },
+  "saju.chart.strengthLabel": { ko: "신강/신약", en: "Strength" },
+  "saju.chart.yongShen": { ko: "용신", en: "Yong-Shen" },
+  "saju.chart.yongShenSub": { ko: "보", en: "Sub" },
+  "saju.chart.dayMasterLabel": { ko: "일간", en: "Day Master" },
+  "saju.chart.dayMasterTag": { ko: "일주", en: "Day Pillar" },
+  "saju.fourPillars.yearPillar": { ko: "년주", en: "Year Pillar" },
+  "saju.fourPillars.monthPillar": { ko: "월주", en: "Month Pillar" },
+  "saju.fourPillars.dayPillar": { ko: "일주", en: "Day Pillar" },
+  "saju.fourPillars.hourPillar": { ko: "시주", en: "Hour Pillar" },
+  "saju.iching.hexagramNum": { ko: "괘", en: "Hexagram" },
+
+  // ─── Canvas: Saju Share Card ───
+  "canvas.saju.tripleLens": { ko: "TRIPLE LENS — 삼중 렌즈 분석", en: "TRIPLE LENS — Triple Analysis" },
+  "canvas.saju.destiny": { ko: "님의 운명", en: "'s Destiny" },
+  "canvas.saju.top": { ko: "상위", en: "Top" },
+  "canvas.saju.systemAgree": { ko: "시스템 일치", en: "systems agree" },
+  "canvas.saju.generating": { ko: "운명 카드 생성 중...", en: "Generating destiny card..." },
+  "canvas.saju.wealth": { ko: "재물", en: "Wealth" },
+  "canvas.saju.love": { ko: "연애", en: "Love" },
+  "canvas.saju.career": { ko: "직업", en: "Career" },
+  "canvas.saju.health": { ko: "건강", en: "Health" },
+  "canvas.saju.fame": { ko: "명예", en: "Fame" },
+
+  // ─── Canvas: Wanted Poster Card ───
+  "canvas.wanted.title": { ko: "수 배 령", en: "W A N T E D" },
+  "canvas.wanted.titleHanja": { ko: "搜  捕  令", en: "DEAD OR ALIVE" },
+  "canvas.wanted.subject": { ko: "관상 분석 대상", en: "Physiognomy Subject" },
+  "canvas.wanted.wanted": { ko: "수배", en: "Wanted" },
+  "canvas.wanted.defaultCrime": { ko: "사람을 홀리는 관상", en: "Bewitching physiognomy" },
+  "canvas.wanted.crime": { ko: "죄   목", en: "C R I M E" },
+  "canvas.wanted.bounty": { ko: "현 상 금", en: "B O U N T Y" },
+  "canvas.wanted.bountyUnit": { ko: "냥", en: "coins" },
+  "canvas.wanted.bountyNote": { ko: "(생포 시 두 배)", en: "(double if alive)" },
+  "canvas.wanted.sexAppeal": { ko: "색기", en: "Charm" },
+  "canvas.wanted.sharpMind": { ko: "총기", en: "Wit" },
+  "canvas.wanted.wealth": { ko: "재력", en: "$$" },
+  "canvas.wanted.peopleLuck": { ko: "인복", en: "Luck" },
+  "canvas.wanted.mainChar": { ko: "관종", en: "Star" },
+  "canvas.wanted.generating": { ko: "수배령 생성 중...", en: "Generating wanted poster..." },
 } as const;
 
 export type TranslationKey = keyof typeof translations;

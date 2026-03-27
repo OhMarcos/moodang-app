@@ -8,7 +8,7 @@ export default function GlobalError({
   reset: () => void;
 }) {
   return (
-    <html lang="ko">
+    <html lang="en">
       <body style={{ margin: 0, fontFamily: "system-ui, sans-serif" }}>
         <div
           style={{
@@ -21,7 +21,7 @@ export default function GlobalError({
         >
           <div style={{ maxWidth: 400, textAlign: "center" }}>
             <h2 style={{ fontSize: "1.25rem", marginBottom: "1rem" }}>
-              오류가 발생했습니다
+              An error occurred / 오류가 발생했습니다
             </h2>
             <div
               style={{
@@ -56,7 +56,7 @@ export default function GlobalError({
                 cursor: "pointer",
               }}
             >
-              다시 시도
+              Try Again / 다시 시도
             </button>
           </div>
         </div>

@@ -2,10 +2,12 @@
 
 import { useRef, useEffect, useState, useImperativeHandle, forwardRef } from "react";
 import type { GwansangReading } from "@/lib/gwansang/types";
+import type { Locale } from "@/lib/i18n/translations";
 
 interface FaceAnalysisOverlayProps {
   imageUrl: string;
   reading: GwansangReading;
+  locale: Locale;
 }
 
 export interface CardHandle {
@@ -32,45 +34,86 @@ const WIDTH = 1080;
 const HEIGHT = 1350; // 4:5 ratio — optimal for Instagram feed
 const PAD = 28;
 
-const SCORE_LABELS: { key: string; label: string; emoji: string }[] = [
-  { key: "sexAppeal", label: "색기", emoji: "🔥" },
-  { key: "sharpMind", label: "총기", emoji: "🧠" },
-  { key: "wealthPotential", label: "재력", emoji: "💰" },
-  { key: "peopleLuck", label: "인복", emoji: "🤝" },
-  { key: "mainCharacterEnergy", label: "관종력", emoji: "⭐" },
-];
+const SCORE_LABELS: Record<Locale, { key: string; label: string; emoji: string }[]> = {
+  ko: [
+    { key: "sexAppeal", label: "색기", emoji: "🔥" },
+    { key: "sharpMind", label: "총기", emoji: "🧠" },
+    { key: "wealthPotential", label: "재력", emoji: "💰" },
+    { key: "peopleLuck", label: "인복", emoji: "🤝" },
+    { key: "mainCharacterEnergy", label: "관종력", emoji: "⭐" },
+  ],
+  en: [
+    { key: "sexAppeal", label: "Charm", emoji: "🔥" },
+    { key: "sharpMind", label: "Wit", emoji: "🧠" },
+    { key: "wealthPotential", label: "Wealth", emoji: "💰" },
+    { key: "peopleLuck", label: "Luck", emoji: "🤝" },
+    { key: "mainCharacterEnergy", label: "Star", emoji: "⭐" },
+  ],
+};
 
 /** 12궁 positions relative to photo region */
-const TWELVE_PALACES = [
-  { id: "명궁", x: 0.50, y: 0.38 },
-  { id: "관록궁", x: 0.50, y: 0.22 },
-  { id: "복덕궁", x: 0.50, y: 0.12 },
-  { id: "형제궁", x: 0.36, y: 0.35 },
-  { id: "전택궁", x: 0.36, y: 0.42 },
-  { id: "처첩궁", x: 0.72, y: 0.44 },
-  { id: "재백궁", x: 0.50, y: 0.54 },
-  { id: "질액궁", x: 0.50, y: 0.46 },
-  { id: "천이궁", x: 0.20, y: 0.24 },
-  { id: "남녀궁", x: 0.39, y: 0.52 },
-  { id: "노복궁", x: 0.50, y: 0.84 },
-  { id: "상모궁", x: 0.14, y: 0.44 },
-];
+const TWELVE_PALACES: Record<Locale, { id: string; x: number; y: number }[]> = {
+  ko: [
+    { id: "명궁", x: 0.50, y: 0.38 },
+    { id: "관록궁", x: 0.50, y: 0.22 },
+    { id: "복덕궁", x: 0.50, y: 0.12 },
+    { id: "형제궁", x: 0.36, y: 0.35 },
+    { id: "전택궁", x: 0.36, y: 0.42 },
+    { id: "처첩궁", x: 0.72, y: 0.44 },
+    { id: "재백궁", x: 0.50, y: 0.54 },
+    { id: "질액궁", x: 0.50, y: 0.46 },
+    { id: "천이궁", x: 0.20, y: 0.24 },
+    { id: "남녀궁", x: 0.39, y: 0.52 },
+    { id: "노복궁", x: 0.50, y: 0.84 },
+    { id: "상모궁", x: 0.14, y: 0.44 },
+  ],
+  en: [
+    { id: "Life", x: 0.50, y: 0.38 },
+    { id: "Career", x: 0.50, y: 0.22 },
+    { id: "Fortune", x: 0.50, y: 0.12 },
+    { id: "Sibling", x: 0.36, y: 0.35 },
+    { id: "Estate", x: 0.36, y: 0.42 },
+    { id: "Spouse", x: 0.72, y: 0.44 },
+    { id: "Wealth", x: 0.50, y: 0.54 },
+    { id: "Health", x: 0.50, y: 0.46 },
+    { id: "Travel", x: 0.20, y: 0.24 },
+    { id: "Children", x: 0.39, y: 0.52 },
+    { id: "Servant", x: 0.50, y: 0.84 },
+    { id: "Looks", x: 0.14, y: 0.44 },
+  ],
+};
 
 /** 오관 labels */
-const FIVE_FEATURES = [
-  { id: "보수관", x: 0.66, y: 0.35, desc: "눈썹" },
-  { id: "감찰관", x: 0.66, y: 0.42, desc: "눈" },
-  { id: "심판관", x: 0.63, y: 0.54, desc: "코" },
-  { id: "출납관", x: 0.63, y: 0.70, desc: "입" },
-  { id: "채청관", x: 0.88, y: 0.44, desc: "귀" },
-];
+const FIVE_FEATURES: Record<Locale, { id: string; x: number; y: number; desc: string }[]> = {
+  ko: [
+    { id: "보수관", x: 0.66, y: 0.35, desc: "눈썹" },
+    { id: "감찰관", x: 0.66, y: 0.42, desc: "눈" },
+    { id: "심판관", x: 0.63, y: 0.54, desc: "코" },
+    { id: "출납관", x: 0.63, y: 0.70, desc: "입" },
+    { id: "채청관", x: 0.88, y: 0.44, desc: "귀" },
+  ],
+  en: [
+    { id: "Brow", x: 0.66, y: 0.35, desc: "Eyebrow" },
+    { id: "Eye", x: 0.66, y: 0.42, desc: "Eye" },
+    { id: "Nose", x: 0.63, y: 0.54, desc: "Nose" },
+    { id: "Mouth", x: 0.63, y: 0.70, desc: "Mouth" },
+    { id: "Ear", x: 0.88, y: 0.44, desc: "Ear" },
+  ],
+};
 
 /** 삼정 horizontal division lines */
-const THREE_COURTS = [
-  { y: 0.06, label: "상정" },
-  { y: 0.34, label: "중정" },
-  { y: 0.64, label: "하정" },
-];
+const THREE_COURTS: Record<Locale, { y: number; label: string }[]> = {
+  ko: [
+    { y: 0.06, label: "상정" },
+    { y: 0.34, label: "중정" },
+    { y: 0.64, label: "하정" },
+  ],
+  en: [
+    { y: 0.06, label: "Upper" },
+    { y: 0.34, label: "Middle" },
+    { y: 0.64, label: "Lower" },
+  ],
+};
 
 function roundRect(
   ctx: CanvasRenderingContext2D,
@@ -144,7 +187,11 @@ function applyMysticFilter(
 function drawFaceAnnotations(
   ctx: CanvasRenderingContext2D,
   photoX: number, photoY: number, photoW: number, photoH: number,
+  locale: Locale,
 ) {
+  const palaces = TWELVE_PALACES[locale];
+  const fiveFeatures = FIVE_FEATURES[locale];
+  const courts = THREE_COURTS[locale];
   ctx.save();
 
   // ─── Face oval outline (neon glow) ───
@@ -169,7 +216,7 @@ function drawFaceAnnotations(
   // ─── 삼정 horizontal lines ───
   ctx.strokeStyle = `${C.cyan}30`;
   ctx.lineWidth = 0.8;
-  for (const court of THREE_COURTS) {
+  for (const court of courts) {
     const cy = photoY + court.y * photoH;
     ctx.setLineDash([5, 3]);
     ctx.beginPath();
@@ -186,7 +233,7 @@ function drawFaceAnnotations(
   ctx.setLineDash([]);
 
   // ─── 12궁 markers (neon dots + glass badges) ───
-  for (const palace of TWELVE_PALACES) {
+  for (const palace of palaces) {
     const px = photoX + palace.x * photoW;
     const py = photoY + palace.y * photoH;
 
@@ -229,7 +276,7 @@ function drawFaceAnnotations(
   }
 
   // ─── 오관 labels (right side connectors) ───
-  for (const feat of FIVE_FEATURES) {
+  for (const feat of fiveFeatures) {
     const fx = photoX + feat.x * photoW;
     const fy = photoY + feat.y * photoH;
 
@@ -277,7 +324,10 @@ function drawCard(
   ctx: CanvasRenderingContext2D,
   img: HTMLImageElement,
   reading: GwansangReading,
+  locale: Locale,
 ) {
+  const isEn = locale === "en";
+  const labels = SCORE_LABELS[locale];
   // ─── Background (deep space gradient) ───
   const bgGrad = ctx.createRadialGradient(WIDTH / 2, HEIGHT * 0.3, 0, WIDTH / 2, HEIGHT * 0.3, HEIGHT * 0.8);
   bgGrad.addColorStop(0, "#1a0a2e");
@@ -316,7 +366,7 @@ function drawCard(
   applyMysticFilter(ctx, photoX, photoY, photoW, photoH);
 
   // Face annotations (12궁/삼정/오관)
-  drawFaceAnnotations(ctx, photoX, photoY, photoW, photoH);
+  drawFaceAnnotations(ctx, photoX, photoY, photoW, photoH, locale);
 
   // Bottom gradient fade
   const fadeGrad = ctx.createLinearGradient(0, photoY + photoH * 0.65, 0, photoY + photoH);
@@ -334,7 +384,7 @@ function drawCard(
   ctx.font = `bold 18px sans-serif`;
   ctx.textAlign = "left";
   ctx.fillStyle = C.neon;
-  ctx.fillText("AI 관상", photoX + 22, photoY + 38);
+  ctx.fillText(isEn ? "AI Face Reading" : "AI 관상", photoX + 22, photoY + 38);
   ctx.restore();
 
   // Face shape label (top-right)
@@ -345,7 +395,7 @@ function drawCard(
   ctx.fillText(shapeText, photoX + photoW - 22, photoY + 38);
 
   // ─── Hero nickname (overlapping photo bottom) ───
-  const nickname = reading.funTags?.nickname ?? "관상 분석";
+  const nickname = reading.funTags?.nickname ?? (isEn ? "Face Reading" : "관상 분석");
   const nickText = `"${nickname}"`;
   const maxNickW = photoW - 80;
   const nickSize = fitText(ctx, nickText, maxNickW, 52, 28, "bold");
@@ -372,8 +422,8 @@ function drawCard(
   const barH = 18;
   const rowGap = 42;
 
-  for (let i = 0; i < SCORE_LABELS.length; i++) {
-    const { key, label, emoji } = SCORE_LABELS[i];
+  for (let i = 0; i < labels.length; i++) {
+    const { key, label, emoji } = labels[i];
     const value = scoresMap[key] ?? 50;
     const y = scoreStartY + i * rowGap;
     const isTop = key === topScore.key;
@@ -458,11 +508,11 @@ function drawCard(
   ctx.font = `bold 22px sans-serif`;
   ctx.textAlign = "center";
   ctx.fillStyle = `${C.gold}cc`;
-  ctx.fillText("내 관상 능력치는?  👀  moodang.app", WIDTH / 2, ctaY);
+  ctx.fillText(isEn ? "What's your face score?  👀  moodang.app" : "내 관상 능력치는?  👀  moodang.app", WIDTH / 2, ctaY);
 }
 
 const FaceAnalysisOverlay = forwardRef<CardHandle, FaceAnalysisOverlayProps>(
-  function FaceAnalysisOverlay({ imageUrl, reading }, ref) {
+  function FaceAnalysisOverlay({ imageUrl, reading, locale }, ref) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [isReady, setIsReady] = useState(false);
 
@@ -482,12 +532,12 @@ const FaceAnalysisOverlay = forwardRef<CardHandle, FaceAnalysisOverlayProps>(
       img.onload = () => {
         canvas.width = WIDTH;
         canvas.height = HEIGHT;
-        drawCard(ctx, img, reading);
+        drawCard(ctx, img, reading, locale);
         setIsReady(true);
       };
 
       img.src = imageUrl;
-    }, [imageUrl, reading]);
+    }, [imageUrl, reading, locale]);
 
     return (
       <div className="relative w-full max-w-md mx-auto">
@@ -498,7 +548,7 @@ const FaceAnalysisOverlay = forwardRef<CardHandle, FaceAnalysisOverlayProps>(
         {!isReady && (
           <div className="absolute inset-0 flex items-center justify-center bg-[var(--color-bg-card)] rounded-xl">
             <p className="text-sm text-[var(--color-text-secondary)] animate-pulse-gold">
-              카드 생성 중...
+              {locale === "en" ? "Generating card..." : "카드 생성 중..."}
             </p>
           </div>
         )}

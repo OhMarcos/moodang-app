@@ -2,10 +2,12 @@
 
 import { useRef, useEffect, useState, useImperativeHandle, forwardRef } from "react";
 import type { SajuReading } from "@/lib/saju/types";
+import type { Locale } from "@/lib/i18n/translations";
 
 interface SajuShareCardProps {
   reading: SajuReading;
   name: string;
+  locale: Locale;
 }
 
 export interface SajuCardHandle {
@@ -39,13 +41,22 @@ const GRADE_COLORS: Record<string, string> = {
   C: "#94a3b8",
 };
 
-const FORTUNE_LABELS = [
-  { key: "wealth", label: "재물", emoji: "💰" },
-  { key: "love", label: "연애", emoji: "❤" },
-  { key: "career", label: "직업", emoji: "🎯" },
-  { key: "health", label: "건강", emoji: "💪" },
-  { key: "fame", label: "명예", emoji: "👑" },
-];
+const FORTUNE_LABELS: Record<Locale, { key: string; label: string; emoji: string }[]> = {
+  ko: [
+    { key: "wealth", label: "재물", emoji: "💰" },
+    { key: "love", label: "연애", emoji: "❤" },
+    { key: "career", label: "직업", emoji: "🎯" },
+    { key: "health", label: "건강", emoji: "💪" },
+    { key: "fame", label: "명예", emoji: "👑" },
+  ],
+  en: [
+    { key: "wealth", label: "Wealth", emoji: "💰" },
+    { key: "love", label: "Love", emoji: "❤" },
+    { key: "career", label: "Career", emoji: "🎯" },
+    { key: "health", label: "Health", emoji: "💪" },
+    { key: "fame", label: "Fame", emoji: "👑" },
+  ],
+};
 
 function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
   ctx.beginPath();
@@ -61,26 +72,10 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
   ctx.closePath();
 }
 
-/**
- * Saju destiny card — 1080x1080, no photo
- *
- * Layout:
- *   ┌──────────────────────┐
- *   │   PURPLE FRAME       │
- *   │ ┌──────────────────┐ │
- *   │ │  name             │ │
- *   │ │  LARGE 한자 hero   │ │
- *   │ │  destiny title     │ │
- *   │ │  grade badge       │ │
- *   │ ├──────────────────┤ │
- *   │ │  fortune scores   │ │
- *   │ │  celebrity match   │ │
- *   │ │  watermark         │ │
- *   │ └──────────────────┘ │
- *   └──────────────────────┘
- */
-function drawCard(ctx: CanvasRenderingContext2D, reading: SajuReading, name: string) {
+function drawCard(ctx: CanvasRenderingContext2D, reading: SajuReading, name: string, locale: Locale) {
   const s = SIZE;
+  const labels = FORTUNE_LABELS[locale];
+  const isEn = locale === "en";
 
   // Background
   ctx.fillStyle = C.bg;
@@ -119,18 +114,17 @@ function drawCard(ctx: CanvasRenderingContext2D, reading: SajuReading, name: str
   ctx.font = `bold 14px "SF Mono", "Menlo", monospace`;
   ctx.textAlign = "center";
   ctx.fillStyle = C.teal;
-  ctx.fillText("TRIPLE LENS — 삼중 렌즈 분석", s / 2, PAD + 40);
+  ctx.fillText(isEn ? "TRIPLE LENS — Triple Analysis" : "TRIPLE LENS — 삼중 렌즈 분석", s / 2, PAD + 40);
 
   // Name
   ctx.font = `500 24px "Noto Serif KR", serif`;
   ctx.textAlign = "center";
   ctx.fillStyle = C.muted;
-  ctx.fillText(`${name}님의 운명`, s / 2, PAD + 68);
+  ctx.fillText(isEn ? `${name}'s Destiny` : `${name}님의 운명`, s / 2, PAD + 68);
 
   // Large Hanja (hero visual)
   ctx.font = `bold 200px "Noto Serif KR", serif`;
   ctx.textAlign = "center";
-  // Gradient fill via multiple overlapping draws
   const hanja = reading?.destinyType?.hanja ?? "命";
   const title = reading?.destinyType?.title ?? "";
   const desc = reading?.destinyType?.description ?? "";
@@ -175,7 +169,7 @@ function drawCard(ctx: CanvasRenderingContext2D, reading: SajuReading, name: str
 
   ctx.font = `500 18px "Noto Serif KR", serif`;
   ctx.fillStyle = C.ivory;
-  ctx.fillText(`상위 ${nationalPercentile}%`, s / 2 + 40, gradeY + 6);
+  ctx.fillText(isEn ? `Top ${nationalPercentile}%` : `상위 ${nationalPercentile}%`, s / 2 + 40, gradeY + 6);
 
   // Divider
   const divY = s * 0.58;
@@ -192,8 +186,8 @@ function drawCard(ctx: CanvasRenderingContext2D, reading: SajuReading, name: str
   const barX = PAD + 28;
   const barW = s - (PAD + 28) * 2;
 
-  for (let i = 0; i < FORTUNE_LABELS.length; i++) {
-    const { key, label, emoji } = FORTUNE_LABELS[i];
+  for (let i = 0; i < labels.length; i++) {
+    const { key, label, emoji } = labels[i];
     const fortune = reading?.fortunes?.[key as keyof typeof reading.fortunes];
     const score = fortune?.score ?? 50;
     const y = barStartY + i * barGap;
@@ -229,7 +223,7 @@ function drawCard(ctx: CanvasRenderingContext2D, reading: SajuReading, name: str
   }
 
   // Triple Convergence verdict
-  const convY = barStartY + FORTUNE_LABELS.length * barGap + 8;
+  const convY = barStartY + labels.length * barGap + 8;
   if (reading?.quadConvergence) {
     const verdictLabel = reading.quadConvergence?.energyVerdictKr ?? "";
     const agreement = reading.quadConvergence?.agreementLevel ?? 0;
@@ -245,7 +239,12 @@ function drawCard(ctx: CanvasRenderingContext2D, reading: SajuReading, name: str
     ctx.font = `bold 20px "Noto Serif KR", serif`;
     ctx.textAlign = "center";
     ctx.fillStyle = C.teal;
-    ctx.fillText(`${verdictLabel}  ·  ${agreement}/3 시스템 일치`, s / 2, convY + 12);
+    ctx.fillText(
+      isEn
+        ? `${verdictLabel}  ·  ${agreement}/3 systems agree`
+        : `${verdictLabel}  ·  ${agreement}/3 시스템 일치`,
+      s / 2, convY + 12,
+    );
   }
 
   // Watermark
@@ -256,7 +255,7 @@ function drawCard(ctx: CanvasRenderingContext2D, reading: SajuReading, name: str
 }
 
 const SajuShareCard = forwardRef<SajuCardHandle, SajuShareCardProps>(
-  function SajuShareCard({ reading, name }, ref) {
+  function SajuShareCard({ reading, name, locale }, ref) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [isReady, setIsReady] = useState(false);
 
@@ -272,9 +271,9 @@ const SajuShareCard = forwardRef<SajuCardHandle, SajuShareCardProps>(
 
       canvas.width = SIZE;
       canvas.height = SIZE;
-      drawCard(ctx, reading, name);
+      drawCard(ctx, reading, name, locale);
       setIsReady(true);
-    }, [reading, name]);
+    }, [reading, name, locale]);
 
     return (
       <div className="relative w-full max-w-md mx-auto">
@@ -285,7 +284,7 @@ const SajuShareCard = forwardRef<SajuCardHandle, SajuShareCardProps>(
         {!isReady && (
           <div className="absolute inset-0 flex items-center justify-center bg-[var(--color-bg-card)] rounded-xl">
             <p className="text-sm text-[var(--color-text-secondary)] animate-pulse-gold">
-              운명 카드 생성 중...
+              {locale === "en" ? "Generating destiny card..." : "운명 카드 생성 중..."}
             </p>
           </div>
         )}
